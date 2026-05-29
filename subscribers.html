@@ -3,232 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المشتركين وقراءة الاستهلاك</title>
+    <title>لوحة التحكم الرئيسية</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #eef2f7; margin: 10px; padding: 5px; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .btn { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-success { background-color: #28a745; }
-        .btn-warning { background-color: #ffc107; color: #333; }
-        .table-wrapper { overflow-x: auto; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 900px; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #007bff; color: white; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
-        .form-group { margin-bottom: 12px; text-align: right; }
-        .form-group label { display: block; margin-bottom: 5px; }
-        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .warn-text { color: red; font-size: 11px; margin-top: 5px; font-weight: bold; }
-        .tab-system { display: flex; gap: 10px; margin-bottom: 15px; }
-
-        /* تنسيقات القائمة المنبثقة الجديدة */
-        .dropdown { position: relative; display: inline-block; }
-        .btn-dots { background: none; border: none; font-size: 20px; cursor: pointer; color: #555; padding: 0 10px; }
-        .dropdown-content { 
-            display: none; 
-            position: absolute; 
-            right: 0; 
-            background-color: white; 
-            min-width: 150px; 
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.15); 
-            border-radius: 6px; 
-            z-index: 100; 
-        }
-        .dropdown-content a { color: #333; padding: 10px 15px; text-decoration: none; display: block; text-align: right; font-size: 13px; }
-        .dropdown-content a:hover { background-color: #f1f1f1; border-radius: 6px; }
-        .show { display: block; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f5f5f5; }
         
-        /* تنسيق أزرار التحكم في الأعلى */
-        .action-buttons { display: flex; gap: 10px; }
+        .navbar {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 { font-size: 20px; }
+        .navbar button { padding: 8px 15px; background: white; color: #007bff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .navbar button:hover { background: #f0f0f0; }
+        
+        .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
+        
+        .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header h2 { color: #333; margin-bottom: 10px; }
+        .user-info { display: flex; justify-content: space-between; font-size: 14px; color: #666; }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .menu-btn {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .menu-btn:hover { transform: translateY(-5px); }
+        .menu-btn.admin { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); }
+        .menu-btn.secondary { background: linear-gradient(135deg, #6c757d 0%, #545b62 100%); }
+        
+        .stats { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .stats h3 { margin-bottom: 15px; color: #333; }
+        
+        .loading { text-align: center; padding: 20px; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <h2 id="pageTitle">👥 كشف إدارة المشتركين</h2>
-        <div class="action-buttons">
-            <button class="btn btn-warning" onclick="openSettings()">⚙️ إعدادات الأسعار</button>
-            <button class="btn btn-success" id="openAddModal">➕ إضافة مشترك جديد</button>
+<div class="navbar">
+    <h1>🚰 نظام إدارة المياه</h1>
+    <button onclick="logout()">🚪 تسجيل الخروج</button>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h2>👋 أهلاً وسهلاً</h2>
+        <div class="user-info">
+            <div>👤 المستخدم: <strong id="userName">جاري التحميل...</strong></div>
+            <div>🔐 الدور: <strong id="userRole">جاري التحميل...</strong></div>
+            <div>📁 المشروع: <strong id="projectName">جاري التحميل...</strong></div>
         </div>
     </div>
 
-    <div class="tab-system">
-        <button class="btn" id="btnTabSubs" onclick="switchView('subs')">👥 قائمة المشتركين</button>
-        <button class="btn" id="btnTabReadings" onclick="switchView('reading')">💧 إدخال قراءة الاستهلاك الشهري</button>
+    <div id="dashboardContent">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>جاري تحميل لوحة التحكم...</p>
+        </div>
     </div>
 
-    <div class="table-wrapper">
-        <table>
-            <thead id="tableHead">
-                <tr>
-                    <th>رقم العداد</th>
-                    <th>اسم المشترك</th>
-                    <th>القراءة السابقة</th>
-                    <th>القراءة الحالية</th>
-                    <th>الاستهلاك</th>
-                    <th>المبلغ الإجمالي</th>
-                    <th>الخيارات</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                </tbody>
-        </table>
+    <div class="stats">
+        <h3>📊 الإحصائيات</h3>
+        <p>عدد المشتركين: <strong id="totalSubscribers">0</strong></p>
+        <p>عدد الموظفين: <strong id="totalEmployees">0</strong></p>
+        <p>إجمالي المصروفات: <strong id="totalExpenses">0</strong> ريال</p>
     </div>
+</div>
 
-<script>
-// ⚙️ إعدادات النظام الافتراضية (رسم الاشتراك وسعر الوحدة)
-let systemSettings = JSON.parse(localStorage.getItem("water_settings")) || {
-    unitPrice: 150,
-    subscriptionFee: 400
-};
+<script type="module">
+    import { authService } from "./js/auth-service.js";
+    import { userManagementService } from "./js/auth-service.js";
+    import { projectDataService } from "./js/project-service.js";
 
-// 👥 جلب بيانات المشتركين من الذاكرة المحلية
-let subscribers = JSON.parse(localStorage.getItem("subscribers")) || [];
+    // التحقق من المستخدم
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) {
+        window.location.href = "index.html";
+    }
 
-// 💾 دالة حفظ المشتركين
-function saveData(){
-    localStorage.setItem("subscribers", JSON.stringify(subscribers));
-}
+    // عرض بيانات المستخدم
+    document.getElementById('userName').textContent = currentUser.displayName;
+    document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '🔐 مدير المشروع' : '👨‍💼 موظف';
+    document.getElementById('projectName').textContent = currentUser.projectId ? currentUser.projectId.substring(0, 10) : 'عام';
 
-// 💾 دالة حفظ الإعدادات
-function saveSettings(){
-    localStorage.setItem("water_settings", JSON.stringify(systemSettings));
-}
-
-// 📊 دالة عرض الجدول وتحديثه
-function renderTable(){
-    const table = document.getElementById("tableBody");
-    table.innerHTML = "";
-
-    subscribers.forEach((sub, index) => {
-        // حساب الاستهلاك (الحالية - السابقة)
-        const consume = Math.max(0, (sub.current || 0) - (sub.previous || 0));
+    // بناء لوحة التحكم
+    async function loadDashboard() {
+        const content = document.getElementById('dashboardContent');
         
-        // حساب المبلغ بناءً على سعر الوحدة ورسم الاشتراك الجديد
-        const amount = (consume * systemSettings.unitPrice) + systemSettings.subscriptionFee;
-
-        table.innerHTML += `
-        <tr>
-            <td>${sub.meter}</td>
-            <td>${sub.name}</td>
-            <td>${sub.previous || 0}</td>
-            <td>${sub.current || 0}</td>
-            <td>${consume}</td>
-            <td>${amount} ريال</td>
-            <td>
-                <div class="dropdown">
-                    <button class="btn-dots" onclick="toggleMenu(event, '${index}')">⋮</button>
-                    <div id="menu-${index}" class="dropdown-content">
-                        <a href="#" onclick="editSub(${index})">✏️ تعديل القراءة</a>
-                        <a href="#" onclick="actionWhatsApp(${index})">📱 إرسال واتساب</a>
-                        <a href="#" onclick="actionPDF(${index})">🖨️ طباعة PDF</a>
-                        <a href="#" onclick="deleteSub(${index})" style="color: red;">🗑️ حذف المشترك</a>
-                    </div>
+        if (currentUser.role === 'admin') {
+            // قائمة Admin
+            content.innerHTML = `
+                <div class="menu-grid">
+                    <button class="menu-btn admin" onclick="window.location.href='subscribers.html'">👥 المشتركين</button>
+                    <button class="menu-btn admin" onclick="window.location.href='readings.html'">💧 القراءات</button>
+                    <button class="menu-btn admin" onclick="window.location.href='users-management.html'">👨‍💼 إدارة الموظفين</button>
+                    <button class="menu-btn admin" onclick="window.location.href='expenses.html'">💰 المصروفات</button>
                 </div>
-            </td>
-        </tr>
-        `;
-    });
-}
-
-// ➕ إضافة مشترك جديد (الاسم ورقم العداد فقط بدون الصندوق)
-document.getElementById("openAddModal").onclick = function(){
-    const name = prompt("اسم المشترك:");
-    if (!name) return;
-
-    const meter = prompt("رقم العداد:");
-    if (!meter) return;
-
-    subscribers.push({
-        name: name,
-        meter: meter,
-        previous: 0,
-        current: 0
-    });
-
-    saveData();
-    renderTable();
-};
-
-// ✏️ تعديل القراءة الحالية مع فحص الشرط الإجباري
-function editSub(index){
-    const currentRead = subscribers[index].current || 0;
-
-    const newRead = prompt(`ادخل القراءة الحالية الجديدة (يجب أن تكون أكبر من أو تساوي السابقة: ${currentRead}):`, currentRead);
-    
-    if (newRead === null || newRead.trim() === "") return;
-    
-    const parsedNewRead = Number(newRead);
-
-    // 🛑 شرط القراءة الإجباري: الحالية لا يمكن أن تكون أصغر من السابقة
-    if (parsedNewRead < currentRead) {
-        alert(`🛑 خطأ: لا يمكن أن تكون القراءة الجديدة (${parsedNewRead}) أصغر من القراءة السابقة (${currentRead})!`);
-        return; 
-    }
-
-    // تحديث القراءات (الحالية القديمة تصبح سابقة، والجديدة تصبح حالية)
-    subscribers[index].previous = currentRead;
-    subscribers[index].current = parsedNewRead;
-
-    saveData();
-    renderTable();
-}
-
-// 🗑️ حذف مشترك
-function deleteSub(index){
-    if (confirm("هل أنت متأكد من حذف هذا المشترك نهائياً؟")){
-        subscribers.splice(index, 1);
-        saveData();
-        renderTable();
-    }
-}
-
-// 🔄 دالة التحكم بفتح وإغلاق القائمة المنبثقة
-function toggleMenu(event, id){
-    event.stopPropagation();
-    document.querySelectorAll('.dropdown-content').forEach(menu => {
-        if (menu.id !== 'menu-' + id){
-            menu.classList.remove('show');
+            `;
+        } else {
+            // قائمة Operator/Viewer
+            content.innerHTML = `
+                <div class="menu-grid">
+                    <button class="menu-btn" onclick="window.location.href='subscribers.html'">👥 المشتركين</button>
+                    <button class="menu-btn" onclick="window.location.href='readings.html'">💧 القراءات</button>
+                </div>
+            `;
         }
-    });
-    const currentMenu = document.getElementById('menu-' + id);
-    if (currentMenu) {
-        currentMenu.classList.toggle('show');
-    }
-}
-
-// 🔒 إغلاق القوائم عند الضغط خارجها
-window.onclick = function(){
-    document.querySelectorAll('.dropdown-content').forEach(menu => {
-        menu.classList.remove('show');
-    });
-}
-
-// 🛠️ دالة تعديل الإعدادات يدوياً (سعر الوحدة ورسم الاشتراك)
-function openSettings() {
-    const newPrice = prompt("تعديل سعر الوحدة الحالي (ريال يمني):", systemSettings.unitPrice);
-    if (newPrice !== null && newPrice.trim() !== "") {
-        systemSettings.unitPrice = Number(newPrice);
     }
 
-    const newFee = prompt("تعديل رسم الاشتراك الثابت الحالي (ريال يمني):", systemSettings.subscriptionFee);
-    if (newFee !== null && newFee.trim() !== "") {
-        systemSettings.subscriptionFee = Number(newFee);
-    }
+    loadDashboard();
 
-    saveSettings();
-    renderTable(); 
-}
-
-// 🚀 تشغيل الجدول عند تحميل الصفحة
-renderTable();
-
-// 📞 دوال العمليات المتبقية ليتم ربطها لاحقاً
-function actionWhatsApp(index) { alert("جاري تجهيز إرسال الواتساب للمشترك: " + subscribers[index].name); }
-function actionPDF(index) { alert("جاري تجهيز طباعة PDF للمشترك: " + subscribers[index].name); }
-function switchView(view) { console.log('الانتقال إلى واجهة: ' + view); }
+    // تسجيل الخروج
+    window.logout = async function() {
+        if (confirm('هل تريد تسجيل الخروج؟')) {
+            await authService.logout();
+            window.location.href = "index.html";
+        }
+    };
 </script>
 
 </body>
