@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المشتركين والفواتير</title>
+    <title>إدارة المشتركين وقراءة الاستهلاك</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #eef2f7; margin: 10px; padding: 5px; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .btn { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .btn-success { background-color: #28a745; }
+        .btn-warning { background-color: #ffc107; color: #333; }
         .table-wrapper { overflow-x: auto; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 900px; }
         th, td { border: 1px solid #ddd; padding: 8px; }
@@ -20,32 +21,25 @@
         .form-group label { display: block; margin-bottom: 5px; }
         .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
         .warn-text { color: red; font-size: 11px; margin-top: 5px; font-weight: bold; }
+        .tab-system { display: flex; gap: 10px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <h2>👥 كشف المشتركين وإدخل الاستهلاك الشهري</h2>
+        <h2 id="pageTitle">👥 كشف إدارة المشتركين</h2>
         <button class="btn btn-success" id="openAddModal">➕ إضافة مشترك جديد</button>
+    </div>
+
+    <div class="tab-system">
+        <button class="btn" id="btnTabSubs" onclick="switchView('subs')">👥 قائمة المشتركين</button>
+        <button class="btn" id="btnTabReadings" onclick="switchView('reading')">💧 إدخال قراءة الاستهلاك الشهري</button>
     </div>
 
     <div class="table-wrapper">
         <table>
-            <thead>
-                <tr>
-                    <th>رقم العداد</th>
-                    <th>اسم المشترك</th>
-                    <th>رقم الهاتف</th>
-                    <th>القراءة السابقة</th>
-                    <th>القراءة الحالية</th>
-                    <th>الفرق</th>
-                    <th>المتأخرات</th>
-                    <th>رسوم الاشتراك</th>
-                    <th>الواصل</th>
-                    <th>المبلغ المتبقي</th>
-                    <th>إرسال الفاتورة</th>
-                </tr>
-            </thead>
+            <thead id="tableHead">
+                </thead>
             <tbody id="subscribersTableBody">
                 </tbody>
         </table>
@@ -55,22 +49,26 @@
 
     <div class="modal" id="addModal">
         <div class="modal-content">
-            <h3>➕ إضافة مشترك جديد</h3>
+            <h3 id="modalTitle">➕ إضافة مشترك جديد</h3>
             <div class="form-group"><label>رقم العداد:</label><input type="number" id="accNo"></div>
-            <div class="form-group"><label>اسم المشترك الكامل:</label><input type="text" id="accName" placeholder="الاسم الثنائي على الأقل"></div>
-            <div class="form-group"><label>رقم الهاتف المعتمد:</label><input type="number" id="accPhone" placeholder="77xxxxxxx"></div>
-            <div class="form-group"><label>القراءة السابقة التأسيسية:</label><input type="number" id="accPrev" value="0"></div>
-            <div class="form-group"><label>المتأخرات السابقة:</label><input type="number" id="accLate" value="0"></div>
-            <div class="form-group"><label>رسوم الاشتراك الثابتة:</label><input type="number" id="accFee" value="1000"></div>
+            <div class="form-group"><label>اسم المشترك الكامل:</label><input type="text" id="accName"></div>
+            <div class="form-group"><label>رقم الهاتف:</label><input type="number" id="accPhone" placeholder="77xxxxxxx"></div>
+            <div class="form-group" id="grpPrev"><label>القراءة السابقة:</label><input type="number" id="accPrev" value="0"></div>
+            <div class="form-group" id="grpLate"><label>المتأخرات السابقة:</label><input type="number" id="accLate" value="0"></div>
+            <div class="form-group" id="grpCurr" style="display:none;"><label>القراءة الحالية الجديدة:</label><input type="number" id="accCurr" value="0"></div>
+            <div class="form-group" id="grpPaid" style="display:none;"><label>المبلغ الواصل الحاد:</label><input type="number" id="accPaid" value="0"></div>
+            
             <div class="warn-text" id="popErr"></div>
+            
             <button class="btn btn-success" style="width: 100%; margin-top: 10px;" id="btnSaveSub">حفظ في قاعدة البيانات</button>
+            <button class="btn btn-warning" style="width: 100%; margin-top: 5px; display: none;" id="btnUpdateSub">✏️ تعديل الحساب الحالي</button>
             <button class="btn" style="width: 100%; background-color:#aaa; margin-top: 5px;" id="btnCloseModal">إلغاء</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
@@ -84,74 +82,152 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        let allSubscribers = [];
+        let currentView = 'subs'; 
+        let selectedDocId = null;
+
         const modal = document.getElementById('addModal');
-        document.getElementById('openAddModal').addEventListener('click', () => modal.style.display = 'flex');
+        document.getElementById('openAddModal').addEventListener('click', () => {
+            selectedDocId = null;
+            document.getElementById('modalTitle').innerText = "➕ إضافة مشترك جديد";
+            document.getElementById('btnSaveSub').style.display = "block";
+            document.getElementById('btnUpdateSub').style.display = "none";
+            document.getElementById('popErr').innerText = "";
+            modal.style.display = 'flex';
+        });
         document.getElementById('btnCloseModal').addEventListener('click', () => modal.style.display = 'none');
 
-        // إضافة مشترك جديد إلى Firebase وحفظه بشكل دائم
+        // دالة فحص التكرار الاستباقي قبل الإضافة
         document.getElementById('btnSaveSub').addEventListener('click', async () => {
-            const no = document.getElementById('accNo').value;
-            const name = document.getElementById('accName').value;
-            const phone = document.getElementById('accPhone').value;
+            const no = document.getElementById('accNo').value.trim();
+            const name = document.getElementById('accName').value.trim();
+            const phone = document.getElementById('accPhone').value.trim();
             const prev = parseFloat(document.getElementById('accPrev').value) || 0;
             const late = parseFloat(document.getElementById('accLate').value) || 0;
-            const fee = parseFloat(document.getElementById('accFee').value) || 0;
             const err = document.getElementById('popErr');
 
-            if(!no || name.trim().length < 5) { err.innerText = "تنبيه: يرجى كتابة البيانات والاسم بشكل صحيح."; return; }
-            if(!/^(77|73|71|70)\d{7}$/.test(phone)) { err.innerText = "تنبيه: رقم الهاتف غير صحيح."; return; }
-            
+            if(!no || name.length < 5) { err.innerText = "تنبيه: تأكد من كتابة الاسم والعداد بشكل صحيح."; return; }
+
+            // فحص التكرار في البيانات المحلية المسحوبة من فايربيس
+            const isDuplicate = allSubscribers.find(s => s.meterNo === no || s.customerName === name);
+            if(isDuplicate) {
+                err.innerText = "تنبيه: هذا المشترك أو رقم العداد مسجل مسبقاً في المنظومة المحاسبية!";
+                selectedDocId = isDuplicate.id;
+                document.getElementById('btnSaveSub').style.display = "none";
+                document.getElementById('btnUpdateSub').style.display = "block";
+                return;
+            }
+
             try {
                 await addDoc(collection(db, "subscribers"), {
-                    meterNo: no,
-                    customerName: name,
-                    phoneNo: phone,
-                    previousReading: prev,
-                    currentReading: prev, 
-                    diff: 0,
-                    lateAmount: late,
-                    subFee: fee,
-                    paid: 0,
-                    rem: (late + fee)
+                    meterNo: no, customerName: name, phoneNo: phone,
+                    previousReading: prev, currentReading: prev, diff: 0,
+                    lateAmount: late, subFee: 1000, paid: 0, rem: (late + 1000)
                 });
                 alert("تم حفظ البيانات بنجاح!");
                 modal.style.display = 'none';
-                err.innerText = "";
-            } catch (e) {
-                alert("حدث خطأ أثناء الحفظ، يرجى المحاولة مجدداً.");
-            }
+            } catch (e) { alert("حدث خطأ أثناء الاتصال."); }
         });
 
-        // عرض وجلب المشتركين تلقائياً ومزامنتهم فورياً في الجدول
+        // دالة التعديل المباشر في حال الرغبة بإصلاح الخلل أو البيانات المكررة
+        document.getElementById('btnUpdateSub').addEventListener('click', async () => {
+            if(!selectedDocId) return;
+            const curr = parseFloat(document.getElementById('accCurr').value) || 0;
+            const prev = parseFloat(document.getElementById('accPrev').value) || 0;
+            const paid = parseFloat(document.getElementById('accPaid').value) || 0;
+            const late = parseFloat(document.getElementById('accLate').value) || 0;
+
+            if(curr < prev && currentView === 'reading') {
+                document.getElementById('popErr').innerText = "خطأ: لا يمكن أن تكون القراءة الحالية أقل من السابقة.";
+                return;
+            }
+
+            const diff = curr - prev;
+            const subFee = 1000; 
+            const totalDebt = late + subFee + (diff * 10); // احتساب افتراضي لسعر الوحدة بـ 10 ريال
+            const rem = totalDebt - paid;
+
+            try {
+                const docRef = doc(db, "subscribers", selectedDocId);
+                await updateDoc(docRef, {
+                    previousReading: prev,
+                    currentReading: currentView === 'reading' ? curr : prev,
+                    diff: diff,
+                    paid: paid,
+                    rem: rem
+                });
+                alert("تم تحديث السجل المحاسبي وإصلاح القراءات بنجاح!");
+                modal.style.display = 'none';
+            } catch(e) { alert("خطأ في التحديث."); }
+        });
+
+        // مزامنة البيانات وعرضها ديناميكياً حسب واجهة العمل المتواجد فيها المستخدم
         onSnapshot(collection(db, "subscribers"), (snapshot) => {
+            allSubscribers = [];
+            snapshot.forEach(doc => { allSubscribers.push({ id: doc.id, ...doc.data() }); });
+            renderTable();
+        });
+
+        window.switchView = function(view) {
+            currentView = view;
+            if(view === 'reading') {
+                document.getElementById('pageTitle').innerText = "💧 واجهة قراءة الاستهلاك الشهري الثابتة";
+                document.getElementById('grpCurr').style.display = "block";
+                document.getElementById('grpPaid').style.display = "block";
+            } else {
+                document.getElementById('pageTitle').innerText = "👥 كشف إدارة المشتركين";
+                document.getElementById('grpCurr').style.display = "none";
+                document.getElementById('grpPaid').style.display = "none";
+            }
+            renderTable();
+        }
+
+        function renderTable() {
+            const thead = document.getElementById('tableHead');
             const tbody = document.getElementById('subscribersTableBody');
             tbody.innerHTML = "";
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${data.meterNo}</td>
-                    <td>${data.customerName}</td>
-                    <td>${data.phoneNo}</td>
-                    <td>${data.previousReading}</td>
-                    <td>${data.currentReading}</td>
-                    <td>${data.diff}</td>
-                    <td>${data.lateAmount}</td>
-                    <td>${data.subFee}</td>
-                    <td>${data.paid}</td>
-                    <td style="color: red; font-weight: bold;">${data.rem}</td>
-                    <td><button class="btn" onclick="sendInvoice('${data.customerName}', '${data.phoneNo}', ${data.rem})">📱 واتساب</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        });
-    </script>
 
-    <script>
-        function sendInvoice(name, phone, debt) {
-            const msg = `المشترك: ${name}\nنود إشعاركم بأن مديونيتكم الحالية لمشروع المياه هي: ${debt} ريال يمني.\nيرجى السداد فوراً، علماً بأنه في حال عدم السداد سيتم فصل العداد تلقائياً.\n\nتطوير وتصميم: عصام المهدي 779551518`;
-            window.open(`https://wa.me/967${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+            if(currentView === 'subs') {
+                thead.innerHTML = `<tr><th>رقم العداد</th><th>اسم المشترك</th><th>رقم الهاتف</th><th>المتأخرات</th><th>رسوم الاشتراك</th><th>المبلغ المتبقي</th><th>الخيارات</th></tr>`;
+                allSubscribers.forEach(data => {
+                    tbody.innerHTML += `<tr>
+                        <td>${data.meterNo}</td><td>${data.customerName}</td><td>${data.phoneNo}</td>
+                        <td>${data.lateAmount}</td><td>${data.subFee}</td><td style="color:red;">${data.rem}</td>
+                        <td><button class="btn btn-warning" onclick="initiateEdit('${data.id}')">✏️ تعديل</button></td>
+                    </tr>`;
+                });
+            } else {
+                thead.innerHTML = `<tr><th>رقم العداد</th><th>اسم المشترك</th><th>القراءة السابقة (ثابتة)</th><th>القراءة الحالية</th><th>الفرق</th><th>الواصل</th><th>المتبقي الصافي</th><th>تعديل الاستهلاك</th></tr>`;
+                allSubscribers.forEach(data => {
+                    tbody.innerHTML += `<tr>
+                        <td>${data.meterNo}</td><td>${data.customerName}</td>
+                        <td style="background:#eee;">${data.previousReading}</td><td>${data.currentReading}</td>
+                        <td>${data.diff}</td><td>${data.paid}</td><td style="color:blue;">${data.rem}</td>
+                        <td><button class="btn btn-warning" onclick="initiateEdit('${data.id}')">💧 تعديل القراءة</button></td>
+                    </tr>`;
+                });
+            }
         }
+
+        window.initiateEdit = function(id) {
+            const item = allSubscribers.find(s => s.id === id);
+            if(!item) return;
+            selectedDocId = id;
+            document.getElementById('modalTitle').innerText = "✏️ تعديل وإصلاح قراءات الحساب";
+            document.getElementById('accNo').value = item.meterNo;
+            document.getElementById('accName').value = item.customerName;
+            document.getElementById('accPhone').value = item.phoneNo;
+            document.getElementById('accPrev').value = item.previousReading;
+            document.getElementById('accCurr').value = item.currentReading;
+            document.getElementById('accLate').value = item.lateAmount;
+            document.getElementById('accPaid').value = item.paid;
+            
+            document.getElementById('btnSaveSub').style.display = "none";
+            document.getElementById('btnUpdateSub').style.display = "block";
+            modal.style.display = 'flex';
+        }
+
+        switchView('subs');
     </script>
 </body>
 </html>
