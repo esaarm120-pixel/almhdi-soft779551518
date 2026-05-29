@@ -36,7 +36,7 @@
             margin-bottom: 8px;
             color: #666;
         }
-        input [type="email"], input[type="password"] {
+        input[type="email"], input[type="password"] {
             width: 100%;
             padding: 12px;
             border: 1px solid #ccc;
@@ -108,10 +108,8 @@
 
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                // نجاح تسجيل الدخول
-                alert("تم تسجيل الدخول بنجاح!");
-                // هنا سنقوم بالتوجيه إلى الصفحة المحاسبية الرئيسية لاحقاً
-                // window.location.href = "dashboard.html";
+                // نجاح تسجيل الدخول والانتقال فوراً للديشبورد
+                window.location.href = "dashboard.html";
             })
             .catch((error) => {
                 // فشل تسجيل الدخول
