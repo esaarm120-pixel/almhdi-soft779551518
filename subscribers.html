@@ -22,6 +22,23 @@
         .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
         .warn-text { color: red; font-size: 11px; margin-top: 5px; font-weight: bold; }
         .tab-system { display: flex; gap: 10px; margin-bottom: 15px; }
+
+        /* تنسيقات القائمة المنبثقة الجديدة */
+        .dropdown { position: relative; display: inline-block; }
+        .btn-dots { background: none; border: none; font-size: 20px; cursor: pointer; color: #555; padding: 0 10px; }
+        .dropdown-content { 
+            display: none; 
+            position: absolute; 
+            right: 0; 
+            background-color: white; 
+            min-width: 150px; 
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.15); 
+            border-radius: 6px; 
+            z-index: 100; 
+        }
+        .dropdown-content a { color: #333; padding: 10px 15px; text-decoration: none; display: block; text-align: right; font-size: 13px; }
+        .dropdown-content a:hover { background-color: #f1f1f1; border-radius: 6px; }
+        .show { display: block; }
     </style>
 </head>
 <body>
@@ -39,195 +56,68 @@
     <div class="table-wrapper">
         <table>
             <thead id="tableHead">
-                </thead>
-            <tbody id="subscribersTableBody">
-                </tbody>
+                <tr>
+                    <th>رقم العداد</th>
+                    <th>اسم المشترك</th>
+                    <th>القراءة السابقة</th>
+                    <th>القراءة الحالية</th>
+                    <th>الاستهلاك</th>
+                    <th>المبلغ</th>
+                    <th>الخيارات</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr>
+                    <td>101</td>
+                    <td>عصام المهدي</td>
+                    <td>1200</td>
+                    <td>1250</td>
+                    <td>50</td>
+                    <td>50000</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn-dots" onclick="toggleMenu(event, 'sub1')">⋮</button>
+                            <div id="menu-sub1" class="dropdown-content">
+                                <a href="#" onclick="actionEdit('sub1')">✏️ تعديل البيانات</a>
+                                <a href="#" onclick="actionWhatsApp('sub1')">📱 إرسال واتساب</a>
+                                <a href="#" onclick="actionPDF('sub1')">🖨️ طباعة PDF</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
         </table>
     </div>
-    
-    <p style="text-align: center; margin-top: 15px;"><button class="btn" onclick="window.location.href='dashboard.html'">⬅️ العودة للرئيسية</button></p>
 
-    <div class="modal" id="addModal">
-        <div class="modal-content">
-            <h3 id="modalTitle">➕ إضافة مشترك جديد</h3>
-            <div class="form-group"><label>رقم العداد:</label><input type="number" id="accNo"></div>
-            <div class="form-group"><label>اسم المشترك الكامل:</label><input type="text" id="accName"></div>
-            <div class="form-group"><label>رقم الهاتف:</label><input type="number" id="accPhone" placeholder="77xxxxxxx"></div>
-            <div class="form-group" id="grpPrev"><label>القراءة السابقة:</label><input type="number" id="accPrev" value="0"></div>
-            <div class="form-group" id="grpLate"><label>المتأخرات السابقة:</label><input type="number" id="accLate" value="0"></div>
-            <div class="form-group" id="grpCurr" style="display:none;"><label>القراءة الحالية الجديدة:</label><input type="number" id="accCurr" value="0"></div>
-            <div class="form-group" id="grpPaid" style="display:none;"><label>المبلغ الواصل الحاد:</label><input type="number" id="accPaid" value="0"></div>
+    <script>
+        // دالة التحكم بفتح وإغلاق القائمة المنبثقة
+        function toggleMenu(event, id) {
+            event.stopPropagation();
             
-            <div class="warn-text" id="popErr"></div>
-            
-            <button class="btn btn-success" style="width: 100%; margin-top: 10px;" id="btnSaveSub">حفظ في قاعدة البيانات</button>
-            <button class="btn btn-warning" style="width: 100%; margin-top: 5px; display: none;" id="btnUpdateSub">✏️ تعديل الحساب الحالي</button>
-            <button class="btn" style="width: 100%; background-color:#aaa; margin-top: 5px;" id="btnCloseModal">إلغاء</button>
-        </div>
-    </div>
+            // إغلاق أي قائمة أخرى مفتوحة أولاً
+            document.querySelectorAll('.dropdown-content').forEach(menu => {
+                if (menu.id !== 'menu-' + id) {
+                    menu.classList.remove('show');
+                }
+            });
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
-          authDomain: "almhdi-soft779551518.firebaseapp.com",
-          projectId: "almhdi-soft779551518",
-          storageBucket: "almhdi-soft779551518.firebasestorage.app",
-          messagingSenderId: "386533839313",
-          appId: "1:386533839313:web:575bc9978c0e38ffd950f0"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        let allSubscribers = [];
-        let currentView = 'subs'; 
-        let selectedDocId = null;
-
-        const modal = document.getElementById('addModal');
-        document.getElementById('openAddModal').addEventListener('click', () => {
-            selectedDocId = null;
-            document.getElementById('modalTitle').innerText = "➕ إضافة مشترك جديد";
-            document.getElementById('btnSaveSub').style.display = "block";
-            document.getElementById('btnUpdateSub').style.display = "none";
-            document.getElementById('popErr').innerText = "";
-            modal.style.display = 'flex';
-        });
-        document.getElementById('btnCloseModal').addEventListener('click', () => modal.style.display = 'none');
-
-        // دالة فحص التكرار الاستباقي قبل الإضافة
-        document.getElementById('btnSaveSub').addEventListener('click', async () => {
-            const no = document.getElementById('accNo').value.trim();
-            const name = document.getElementById('accName').value.trim();
-            const phone = document.getElementById('accPhone').value.trim();
-            const prev = parseFloat(document.getElementById('accPrev').value) || 0;
-            const late = parseFloat(document.getElementById('accLate').value) || 0;
-            const err = document.getElementById('popErr');
-
-            if(!no || name.length < 5) { err.innerText = "تنبيه: تأكد من كتابة الاسم والعداد بشكل صحيح."; return; }
-
-            // فحص التكرار في البيانات المحلية المسحوبة من فايربيس
-            const isDuplicate = allSubscribers.find(s => s.meterNo === no || s.customerName === name);
-            if(isDuplicate) {
-                err.innerText = "تنبيه: هذا المشترك أو رقم العداد مسجل مسبقاً في المنظومة المحاسبية!";
-                selectedDocId = isDuplicate.id;
-                document.getElementById('btnSaveSub').style.display = "none";
-                document.getElementById('btnUpdateSub').style.display = "block";
-                return;
-            }
-
-            try {
-                await addDoc(collection(db, "subscribers"), {
-                    meterNo: no, customerName: name, phoneNo: phone,
-                    previousReading: prev, currentReading: prev, diff: 0,
-                    lateAmount: late, subFee: 1000, paid: 0, rem: (late + 1000)
-                });
-                alert("تم حفظ البيانات بنجاح!");
-                modal.style.display = 'none';
-            } catch (e) { alert("حدث خطأ أثناء الاتصال."); }
-        });
-
-        // دالة التعديل المباشر في حال الرغبة بإصلاح الخلل أو البيانات المكررة
-        document.getElementById('btnUpdateSub').addEventListener('click', async () => {
-            if(!selectedDocId) return;
-            const curr = parseFloat(document.getElementById('accCurr').value) || 0;
-            const prev = parseFloat(document.getElementById('accPrev').value) || 0;
-            const paid = parseFloat(document.getElementById('accPaid').value) || 0;
-            const late = parseFloat(document.getElementById('accLate').value) || 0;
-
-            if(curr < prev && currentView === 'reading') {
-                document.getElementById('popErr').innerText = "خطأ: لا يمكن أن تكون القراءة الحالية أقل من السابقة.";
-                return;
-            }
-
-            const diff = curr - prev;
-            const subFee = 1000; 
-            const totalDebt = late + subFee + (diff * 10); // احتساب افتراضي لسعر الوحدة بـ 10 ريال
-            const rem = totalDebt - paid;
-
-            try {
-                const docRef = doc(db, "subscribers", selectedDocId);
-                await updateDoc(docRef, {
-                    previousReading: prev,
-                    currentReading: currentView === 'reading' ? curr : prev,
-                    diff: diff,
-                    paid: paid,
-                    rem: rem
-                });
-                alert("تم تحديث السجل المحاسبي وإصلاح القراءات بنجاح!");
-                modal.style.display = 'none';
-            } catch(e) { alert("خطأ في التحديث."); }
-        });
-
-        // مزامنة البيانات وعرضها ديناميكياً حسب واجهة العمل المتواجد فيها المستخدم
-        onSnapshot(collection(db, "subscribers"), (snapshot) => {
-            allSubscribers = [];
-            snapshot.forEach(doc => { allSubscribers.push({ id: doc.id, ...doc.data() }); });
-            renderTable();
-        });
-
-        window.switchView = function(view) {
-            currentView = view;
-            if(view === 'reading') {
-                document.getElementById('pageTitle').innerText = "💧 واجهة قراءة الاستهلاك الشهري الثابتة";
-                document.getElementById('grpCurr').style.display = "block";
-                document.getElementById('grpPaid').style.display = "block";
-            } else {
-                document.getElementById('pageTitle').innerText = "👥 كشف إدارة المشتركين";
-                document.getElementById('grpCurr').style.display = "none";
-                document.getElementById('grpPaid').style.display = "none";
-            }
-            renderTable();
+            // فتح أو إغلاق القائمة المستهدفة
+            const currentMenu = document.getElementById('menu-' + id);
+            currentMenu.classList.toggle('show');
         }
 
-        function renderTable() {
-            const thead = document.getElementById('tableHead');
-            const tbody = document.getElementById('subscribersTableBody');
-            tbody.innerHTML = "";
-
-            if(currentView === 'subs') {
-                thead.innerHTML = `<tr><th>رقم العداد</th><th>اسم المشترك</th><th>رقم الهاتف</th><th>المتأخرات</th><th>رسوم الاشتراك</th><th>المبلغ المتبقي</th><th>الخيارات</th></tr>`;
-                allSubscribers.forEach(data => {
-                    tbody.innerHTML += `<tr>
-                        <td>${data.meterNo}</td><td>${data.customerName}</td><td>${data.phoneNo}</td>
-                        <td>${data.lateAmount}</td><td>${data.subFee}</td><td style="color:red;">${data.rem}</td>
-                        <td><button class="btn btn-warning" onclick="initiateEdit('${data.id}')">✏️ تعديل</button></td>
-                    </tr>`;
-                });
-            } else {
-                thead.innerHTML = `<tr><th>رقم العداد</th><th>اسم المشترك</th><th>القراءة السابقة (ثابتة)</th><th>القراءة الحالية</th><th>الفرق</th><th>الواصل</th><th>المتبقي الصافي</th><th>تعديل الاستهلاك</th></tr>`;
-                allSubscribers.forEach(data => {
-                    tbody.innerHTML += `<tr>
-                        <td>${data.meterNo}</td><td>${data.customerName}</td>
-                        <td style="background:#eee;">${data.previousReading}</td><td>${data.currentReading}</td>
-                        <td>${data.diff}</td><td>${data.paid}</td><td style="color:blue;">${data.rem}</td>
-                        <td><button class="btn btn-warning" onclick="initiateEdit('${data.id}')">💧 تعديل القراءة</button></td>
-                    </tr>`;
-                });
-            }
+        // إغلاق القائمة إذا ضغط المستخدم في أي مكان خارجها
+        window.onclick = function() {
+            document.querySelectorAll('.dropdown-content').forEach(menu => {
+                menu.classList.remove('show');
+            });
         }
 
-        window.initiateEdit = function(id) {
-            const item = allSubscribers.find(s => s.id === id);
-            if(!item) return;
-            selectedDocId = id;
-            document.getElementById('modalTitle').innerText = "✏️ تعديل وإصلاح قراءات الحساب";
-            document.getElementById('accNo').value = item.meterNo;
-            document.getElementById('accName').value = item.customerName;
-            document.getElementById('accPhone').value = item.phoneNo;
-            document.getElementById('accPrev').value = item.previousReading;
-            document.getElementById('accCurr').value = item.currentReading;
-            document.getElementById('accLate').value = item.lateAmount;
-            document.getElementById('accPaid').value = item.paid;
-            
-            document.getElementById('btnSaveSub').style.display = "none";
-            document.getElementById('btnUpdateSub').style.display = "block";
-            modal.style.display = 'flex';
-        }
-
-        switchView('subs');
+        // دوال افتراضية للعمليات لتجربتها
+        function actionEdit(id) { alert('تعديل المشترك ذو الرقم: ' + id); }
+        function actionWhatsApp(id) { alert('جاري تجهيز الإرسال عبر الواتساب للمشترك: ' + id); }
+        function actionPDF(id) { alert('جاري توليد ملف PDF للمشترك: ' + id); }
+        function switchView(view) { console.log('الانتقال إلى واجهة: ' + view); }
     </script>
 </body>
 </html>
