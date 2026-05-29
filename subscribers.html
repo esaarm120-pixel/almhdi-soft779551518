@@ -25,7 +25,7 @@
 <body>
 
     <div class="top-bar">
-        <h2>👥 كشف المشتركين وإدخال الاستهلاك الشهري</h2>
+        <h2>👥 كشف المشتركين وإدخل الاستهلاك الشهري</h2>
         <button class="btn btn-success" id="openAddModal">➕ إضافة مشترك جديد</button>
     </div>
 
@@ -47,20 +47,7 @@
                 </tr>
             </thead>
             <tbody id="subscribersTableBody">
-                <tr>
-                    <td>10021</td>
-                    <td>عصام المهدي</td>
-                    <td>779551518</td>
-                    <td>120</td>
-                    <td>145</td>
-                    <td>25</td>
-                    <td>5000</td>
-                    <td>1000</td>
-                    <td>4000</td>
-                    <td style="color: red; font-weight: bold;">2000</td>
-                    <td><button class="btn" onclick="sendInvoice('عصام المهدي', '779551518', 2000)">📱 واتساب</button></td>
-                </tr>
-            </tbody>
+                </tbody>
         </table>
     </div>
     
@@ -68,12 +55,12 @@
 
     <div class="modal" id="addModal">
         <div class="modal-content">
-            <h3>➕ إضافة مشترك جديد للمنظومة</h3>
+            <h3>➕ إضافة مشترك جديد</h3>
             <div class="form-group"><label>رقم العداد:</label><input type="number" id="accNo"></div>
             <div class="form-group"><label>اسم المشترك الكامل:</label><input type="text" id="accName" placeholder="الاسم الثنائي على الأقل"></div>
-            <div class="form-group"><label>رقم الهاتف المعتمد للواتس:</label><input type="number" id="accPhone" placeholder="77xxxxxxx"></div>
+            <div class="form-group"><label>رقم الهاتف المعتمد:</label><input type="number" id="accPhone" placeholder="77xxxxxxx"></div>
             <div class="form-group"><label>القراءة السابقة التأسيسية:</label><input type="number" id="accPrev" value="0"></div>
-            <div class="form-group"><label>المتأخرات السابقة (إن وجدت):</label><input type="number" id="accLate" value="0"></div>
+            <div class="form-group"><label>المتأخرات السابقة:</label><input type="number" id="accLate" value="0"></div>
             <div class="form-group"><label>رسوم الاشتراك الثابتة:</label><input type="number" id="accFee" value="1000"></div>
             <div class="warn-text" id="popErr"></div>
             <button class="btn btn-success" style="width: 100%; margin-top: 10px;" id="btnSaveSub">حفظ في قاعدة البيانات</button>
@@ -81,23 +68,86 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
+          authDomain: "almhdi-soft779551518.firebaseapp.com",
+          projectId: "almhdi-soft779551518",
+          storageBucket: "almhdi-soft779551518.firebasestorage.app",
+          messagingSenderId: "386533839313",
+          appId: "1:386533839313:web:575bc9978c0e38ffd950f0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         const modal = document.getElementById('addModal');
         document.getElementById('openAddModal').addEventListener('click', () => modal.style.display = 'flex');
         document.getElementById('btnCloseModal').addEventListener('click', () => modal.style.display = 'none');
 
-        document.getElementById('btnSaveSub').addEventListener('click', () => {
+        // إضافة مشترك جديد إلى Firebase وحفظه بشكل دائم
+        document.getElementById('btnSaveSub').addEventListener('click', async () => {
+            const no = document.getElementById('accNo').value;
             const name = document.getElementById('accName').value;
             const phone = document.getElementById('accPhone').value;
+            const prev = parseFloat(document.getElementById('accPrev').value) || 0;
+            const late = parseFloat(document.getElementById('accLate').value) || 0;
+            const fee = parseFloat(document.getElementById('accFee').value) || 0;
             const err = document.getElementById('popErr');
 
-            if(name.trim().length < 5) { err.innerText = "خطأ: يرجى كتابة الاسم ثنائياً على الأقل لمنع الحسابات الوهمية."; return; }
-            if(!/^(77|73|71|70)\d{7}$/.test(phone)) { err.innerText = "خطأ: رقم الهاتف اليمني غير صحيح، يجب أن يتكون من 9 أرقام."; return; }
+            if(!no || name.trim().length < 5) { err.innerText = "تنبيه: يرجى كتابة البيانات والاسم بشكل صحيح."; return; }
+            if(!/^(77|73|71|70)\d{7}$/.test(phone)) { err.innerText = "تنبيه: رقم الهاتف غير صحيح."; return; }
             
-            alert("تم التحقق بنجاح وحفظ الحساب حقيقياً في المنظومة المحاسبية!");
-            modal.style.display = 'none';
+            try {
+                await addDoc(collection(db, "subscribers"), {
+                    meterNo: no,
+                    customerName: name,
+                    phoneNo: phone,
+                    previousReading: prev,
+                    currentReading: prev, 
+                    diff: 0,
+                    lateAmount: late,
+                    subFee: fee,
+                    paid: 0,
+                    rem: (late + fee)
+                });
+                alert("تم حفظ البيانات بنجاح!");
+                modal.style.display = 'none';
+                err.innerText = "";
+            } catch (e) {
+                alert("حدث خطأ أثناء الحفظ، يرجى المحاولة مجدداً.");
+            }
         });
 
+        // عرض وجلب المشتركين تلقائياً ومزامنتهم فورياً في الجدول
+        onSnapshot(collection(db, "subscribers"), (snapshot) => {
+            const tbody = document.getElementById('subscribersTableBody');
+            tbody.innerHTML = "";
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${data.meterNo}</td>
+                    <td>${data.customerName}</td>
+                    <td>${data.phoneNo}</td>
+                    <td>${data.previousReading}</td>
+                    <td>${data.currentReading}</td>
+                    <td>${data.diff}</td>
+                    <td>${data.lateAmount}</td>
+                    <td>${data.subFee}</td>
+                    <td>${data.paid}</td>
+                    <td style="color: red; font-weight: bold;">${data.rem}</td>
+                    <td><button class="btn" onclick="sendInvoice('${data.customerName}', '${data.phoneNo}', ${data.rem})">📱 واتساب</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    </script>
+
+    <script>
         function sendInvoice(name, phone, debt) {
             const msg = `المشترك: ${name}\nنود إشعاركم بأن مديونيتكم الحالية لمشروع المياه هي: ${debt} ريال يمني.\nيرجى السداد فوراً، علماً بأنه في حال عدم السداد سيتم فصل العداد تلقائياً.\n\nتطوير وتصميم: عصام المهدي 779551518`;
             window.open(`https://wa.me/967${phone}?text=${encodeURIComponent(msg)}`, '_blank');
