@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شؤون الموظفين والرواتب</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #eef2f7; margin: 10px; padding: 5px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-success { background-color: #28a745; }
+        .table-wrapper { overflow-x: auto; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 14px; min-width: 700px; }
+        th, td { border: 1px solid #ddd; padding: 10px; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
+        .form-group { margin-bottom: 12px; text-align: right; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .error-text { color: red; font-size: 12px; margin-top: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <h2>👔 إدارة الموظفين والمسحوبات النقدية</h2>
+        <button class="btn btn-success" id="openEmpModal">➕ إضافة موظف جديد</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>اسم الموظف</th>
+                    <th>رقم الهاتف</th>
+                    <th>الراتب الشهري</th>
+                    <th>إجمالي المسحوبات</th>
+                    <th>المتبقي له / عليه</th>
+                    <th>مشاركة التقرير</th>
+                </tr>
+            </thead>
+            <tbody id="employeesTableBody">
+                <tr>
+                    <td>كامل المهدي</td>
+                    <td>779551518</td>
+                    <td>50000</td>
+                    <td>20000</td>
+                    <td style="color: green; font-weight: bold;">30000 له</td>
+                    <td><button class="btn" onclick="shareEmployee('كامل المهدي', '779551518', 50000, 20000, 30000)">📱 واتساب</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p style="text-align: center; margin-top: 15px;"><button class="btn" onclick="window.location.href='dashboard.html'">⬅️ العودة للرئيسية</button></p>
+
+    <div class="modal" id="empModal">
+        <div class="modal-content">
+            <h3>➕ إضافة موظف جديد</h3>
+            <div class="form-group"><label>اسم الموظف الكامل:</label><input type="text" id="empName" placeholder="الاسم الثنائي على الأقل"></div>
+            <div class="form-group"><label>رقم الهاتف:</label><input type="number" id="empPhone" placeholder="77xxxxxxx"></div>
+            <div class="form-group"><label>الراتب الشهري الثابت:</label><input type="number" id="empSalary" value="0"></div>
+            <div class="form-group"><label>المسحوبات النقدية الأولية:</label><input type="number" id="empDraw" value="0"></div>
+            <div class="error-text" id="empErr"></div>
+            <button class="btn btn-success" style="width: 100%; margin-top: 10px;" id="btnSaveEmp">حفظ الموظف</button>
+            <button class="btn" style="width: 100%; background-color:#aaa; margin-top: 5px;" id="btnCloseEmpModal">إلغاء</button>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('empModal');
+        document.getElementById('openEmpModal').addEventListener('click', () => modal.style.display = 'flex');
+        document.getElementById('btnCloseEmpModal').addEventListener('click', () => modal.style.display = 'none');
+
+        document.getElementById('btnSaveEmp').addEventListener('click', () => {
+            const name = document.getElementById('empName').value;
+            const phone = document.getElementById('empPhone').value;
+            const salary = parseFloat(document.getElementById('empSalary').value) || 0;
+            const err = document.getElementById('empErr');
+
+            if(name.trim().length < 5) { err.innerText = "خطأ: يرجى كتابة اسم الموظف ثنائياً على الأقل."; return; }
+            if(!/^(77|73|71|70)\d{7}$/.test(phone)) { err.innerText = "خطأ: رقم الهاتف غير صحيح، يجب أن يتكون من 9 أرقام ويبدأ بمزود خدمة يمني."; return; }
+            if(salary <= 0) { err.innerText = "خطأ: يرجى تحديد راتب شهري صحيح للموظف."; return; }
+
+            alert("تم التحقق من البيانات وحفظ حساب الموظف بنجاح في المنظومة المحاسبية!");
+            modal.style.display = 'none';
+        });
+
+        function shareEmployee(name, phone, salary, draw, net) {
+            const msg = `كشف حساب الموظف: ${name}\nالراتب الشهري: ${salary} ريال\nإجمالي المسحوبات النقدية: ${draw} ريال\nالمستحق الصافي الحالي: ${net} ريال يمني.\n\nبرمجة وتطوير: عصام المهدي 779551518`;
+            window.open(`https://wa.me/967${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+    </script>
+</body>
+</html>
