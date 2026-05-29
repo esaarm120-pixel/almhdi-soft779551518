@@ -1,22 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المشتركين وقراءة الاستهلاك</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #eef2f7; margin: 10px; padding: 5px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-success { background-color: #28a745; }
+        .btn-warning { background-color: #ffc107; color: #333; }
+        .table-wrapper { overflow-x: auto; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 900px; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
+        .form-group { margin-bottom: 12px; text-align: right; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .warn-text { color: red; font-size: 11px; margin-top: 5px; font-weight: bold; }
+        .tab-system { display: flex; gap: 10px; margin-bottom: 15px; }
+
+        /* تنسيقات القائمة المنبثقة الجديدة */
+        .dropdown { position: relative; display: inline-block; }
+        .btn-dots { background: none; border: none; font-size: 20px; cursor: pointer; color: #555; padding: 0 10px; }
+        .dropdown-content { 
+            display: none; 
+            position: absolute; 
+            right: 0; 
+            background-color: white; 
+            min-width: 150px; 
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.15); 
+            border-radius: 6px; 
+            z-index: 100; 
+        }
+        .dropdown-content a { color: #333; padding: 10px 15px; text-decoration: none; display: block; text-align: right; font-size: 13px; }
+        .dropdown-content a:hover { background-color: #f1f1f1; border-radius: 6px; }
+        .show { display: block; }
+        
+        /* تنسيق أزرار التحكم في الأعلى */
+        .action-buttons { display: flex; gap: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <h2 id="pageTitle">👥 كشف إدارة المشتركين</h2>
+        <div class="action-buttons">
+            <button class="btn btn-warning" onclick="openSettings()">⚙️ إعدادات الأسعار</button>
+            <button class="btn btn-success" id="openAddModal">➕ إضافة مشترك جديد</button>
+        </div>
+    </div>
+
+    <div class="tab-system">
+        <button class="btn" id="btnTabSubs" onclick="switchView('subs')">👥 قائمة المشتركين</button>
+        <button class="btn" id="btnTabReadings" onclick="switchView('reading')">💧 إدخال قراءة الاستهلاك الشهري</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead id="tableHead">
+                <tr>
+                    <th>رقم العداد</th>
+                    <th>اسم المشترك</th>
+                    <th>القراءة السابقة</th>
+                    <th>القراءة الحالية</th>
+                    <th>الاستهلاك</th>
+                    <th>المبلغ الإجمالي</th>
+                    <th>الخيارات</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
 <script>
-// جلب البيانات من الذاكرة المحلية
+// ⚙️ إعدادات النظام الافتراضية (رسم الاشتراك وسعر الوحدة)
+let systemSettings = JSON.parse(localStorage.getItem("water_settings")) || {
+    unitPrice: 150,
+    subscriptionFee: 400
+};
+
+// 👥 جلب بيانات المشتركين من الذاكرة المحلية
 let subscribers = JSON.parse(localStorage.getItem("subscribers")) || [];
 
-// دالة حفظ البيانات
+// 💾 دالة حفظ المشتركين
 function saveData(){
     localStorage.setItem("subscribers", JSON.stringify(subscribers));
 }
 
-// دالة عرض الجدول وتحديثه
+// 💾 دالة حفظ الإعدادات
+function saveSettings(){
+    localStorage.setItem("water_settings", JSON.stringify(systemSettings));
+}
+
+// 📊 دالة عرض الجدول وتحديثه
 function renderTable(){
     const table = document.getElementById("tableBody");
     table.innerHTML = "";
 
     subscribers.forEach((sub, index) => {
-        // حساب الاستهلاك (الحالية - السابقة) وضمان عدم ظهور قيمة سالبة
+        // حساب الاستهلاك (الحالية - السابقة)
         const consume = Math.max(0, (sub.current || 0) - (sub.previous || 0));
-        // حساب المبلغ (الاستهلاك * 1000)
-        const amount = consume * 1000;
+        
+        // حساب المبلغ بناءً على سعر الوحدة ورسم الاشتراك الجديد
+        const amount = (consume * systemSettings.unitPrice) + systemSettings.subscriptionFee;
 
         table.innerHTML += `
         <tr>
@@ -25,7 +116,7 @@ function renderTable(){
             <td>${sub.previous || 0}</td>
             <td>${sub.current || 0}</td>
             <td>${consume}</td>
-            <td>${amount}</td>
+            <td>${amount} ريال</td>
             <td>
                 <div class="dropdown">
                     <button class="btn-dots" onclick="toggleMenu(event, '${index}')">⋮</button>
@@ -42,7 +133,7 @@ function renderTable(){
     });
 }
 
-// إضافة مشترك جديد
+// ➕ إضافة مشترك جديد (الاسم ورقم العداد فقط بدون الصندوق)
 document.getElementById("openAddModal").onclick = function(){
     const name = prompt("اسم المشترك:");
     if (!name) return;
@@ -61,19 +152,31 @@ document.getElementById("openAddModal").onclick = function(){
     renderTable();
 };
 
-// تعديل القراءة الحالية وتحويل الحالية السابقة إلى سابقة
+// ✏️ تعديل القراءة الحالية مع فحص الشرط الإجباري
 function editSub(index){
-    const newRead = prompt("ادخل القراءة الحالية الجديدة:", subscribers[index].current);
-    if (newRead === null || newRead.trim() === "") return;
+    const currentRead = subscribers[index].current || 0;
 
-    subscribers[index].previous = subscribers[index].current;
-    subscribers[index].current = Number(newRead);
+    const newRead = prompt(`ادخل القراءة الحالية الجديدة (يجب أن تكون أكبر من أو تساوي السابقة: ${currentRead}):`, currentRead);
+    
+    if (newRead === null || newRead.trim() === "") return;
+    
+    const parsedNewRead = Number(newRead);
+
+    // 🛑 شرط القراءة الإجباري: الحالية لا يمكن أن تكون أصغر من السابقة
+    if (parsedNewRead < currentRead) {
+        alert(`🛑 خطأ: لا يمكن أن تكون القراءة الجديدة (${parsedNewRead}) أصغر من القراءة السابقة (${currentRead})!`);
+        return; 
+    }
+
+    // تحديث القراءات (الحالية القديمة تصبح سابقة، والجديدة تصبح حالية)
+    subscribers[index].previous = currentRead;
+    subscribers[index].current = parsedNewRead;
 
     saveData();
     renderTable();
 }
 
-// حذف مشترك
+// 🗑️ حذف مشترك
 function deleteSub(index){
     if (confirm("هل أنت متأكد من حذف هذا المشترك نهائياً؟")){
         subscribers.splice(index, 1);
@@ -82,40 +185,51 @@ function deleteSub(index){
     }
 }
 
-// دالة التحكم بفتح وإغلاق القائمة المنبثقة عند الضغط على زر ⋮
+// 🔄 دالة التحكم بفتح وإغلاق القائمة المنبثقة
 function toggleMenu(event, id){
-    event.stopPropagation(); // منع انتشار الحدث لغلق القائمة فوراً
-
-    // إغلاق أي قائمة أخرى مفتوحة
+    event.stopPropagation();
     document.querySelectorAll('.dropdown-content').forEach(menu => {
         if (menu.id !== 'menu-' + id){
             menu.classList.remove('show');
         }
     });
-
-    // تبديل ظهور القائمة الحالية
     const currentMenu = document.getElementById('menu-' + id);
     if (currentMenu) {
         currentMenu.classList.toggle('show');
     }
 }
 
-// إغلاق القوائم المنبثقة عند الضغط في أي مكان خارجها في الشاشة
+// 🔒 إغلاق القوائم عند الضغط خارجها
 window.onclick = function(){
     document.querySelectorAll('.dropdown-content').forEach(menu => {
         menu.classList.remove('show');
     });
 }
 
-// تشغيل دالة بناء الجدول عند تحميل الصفحة لأول مرة
+// 🛠️ دالة تعديل الإعدادات يدوياً (سعر الوحدة ورسم الاشتراك)
+function openSettings() {
+    const newPrice = prompt("تعديل سعر الوحدة الحالي (ريال يمني):", systemSettings.unitPrice);
+    if (newPrice !== null && newPrice.trim() !== "") {
+        systemSettings.unitPrice = Number(newPrice);
+    }
+
+    const newFee = prompt("تعديل رسم الاشتراك الثابت الحالي (ريال يمني):", systemSettings.subscriptionFee);
+    if (newFee !== null && newFee.trim() !== "") {
+        systemSettings.subscriptionFee = Number(newFee);
+    }
+
+    saveSettings();
+    renderTable(); 
+}
+
+// 🚀 تشغيل الجدول عند تحميل الصفحة
 renderTable();
 
-// دوال مؤقتة للأزرار الجديدة تمهيداً لربطها بالكامل
-function actionWhatsApp(index) {
-    alert("جاري تجهيز إرسال الواتساب للمشترك: " + subscribers[index].name);
-}
-
-function actionPDF(index) {
-    alert("جاري تجهيز طباعة PDF للمشترك: " + subscribers[index].name);
-}
+// 📞 دوال العمليات المتبقية ليتم ربطها لاحقاً
+function actionWhatsApp(index) { alert("جاري تجهيز إرسال الواتساب للمشترك: " + subscribers[index].name); }
+function actionPDF(index) { alert("جاري تجهيز طباعة PDF للمشترك: " + subscribers[index].name); }
+function switchView(view) { console.log('الانتقال إلى واجهة: ' + view); }
 </script>
+
+</body>
+</html>
