@@ -120,14 +120,9 @@
             box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
         }
 
-        .login-btn:active {
-            transform: translateY(0);
-        }
-
         .login-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
-            transform: none;
         }
 
         .error-message {
@@ -139,13 +134,6 @@
             margin-bottom: 15px;
             font-size: 13px;
             border-right: 4px solid #c33;
-            animation: shake 0.4s ease;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
         }
 
         .success-message {
@@ -159,19 +147,14 @@
             border-right: 4px solid #3c3;
         }
 
-        .loading-spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .demo-info {
+            background-color: #e7f3ff;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #0056b3;
+            border-right: 4px solid #007bff;
         }
 
         .footer {
@@ -192,127 +175,60 @@
             text-decoration: none;
             font-weight: 600;
         }
-
-        .footer-link:hover {
-            text-decoration: underline;
-        }
-
-        .demo-info {
-            background-color: #e7f3ff;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            color: #0056b3;
-            border-right: 4px solid #007bff;
-        }
-
-        /* تجاوب الأجهزة */
-        @media (max-width: 480px) {
-            .login-wrapper {
-                padding: 30px 20px;
-            }
-
-            .logo {
-                font-size: 50px;
-            }
-
-            h1 {
-                font-size: 20px;
-            }
-        }
     </style>
 </head>
 <body>
 
 <div class="login-wrapper">
-    <!-- قسم الشعار -->
     <div class="logo-section">
         <div class="logo">🚰</div>
         <h1>نظام إدارة المياه</h1>
-        <p class="subtitle">منظومة محاسبية متكاملة لإدارة مشاريع المياه<br>مشروع مياه قرية الحسينية</p>
+        <p class="subtitle">منظومة محاسبية متكاملة لإدارة مشاريع المياه</p>
     </div>
 
-    <!-- رسالة المعلومات -->
     <div class="demo-info">
         📌 استخدم بيانات حسابك على Firebase للدخول
     </div>
 
-    <!-- رسالة الخطأ -->
     <div class="error-message" id="errorMessage"></div>
-
-    <!-- رسالة النجاح -->
     <div class="success-message" id="successMessage"></div>
 
-    <!-- نموذج تسجيل الدخول -->
     <form id="loginForm" onsubmit="handleLogin(event)">
-        <!-- حقل البريد الإلكتروني -->
         <div class="form-group">
             <label for="email">📧 البريد الإلكتروني:</label>
-            <input 
-                type="email" 
-                id="email" 
-                placeholder="example@gmail.com" 
-                required
-                autocomplete="email"
-            >
+            <input type="email" id="email" placeholder="example@gmail.com" required>
         </div>
 
-        <!-- حقل كلمة المرور -->
         <div class="form-group">
             <label for="password">🔒 كلمة المرور:</label>
-            <input 
-                type="password" 
-                id="password" 
-                placeholder="••••••••" 
-                required
-                autocomplete="current-password"
-            >
+            <input type="password" id="password" placeholder="••••••••" required>
         </div>
 
-        <!-- زر تسجيل الدخول -->
-        <button type="submit" class="login-btn" id="loginBtn">
-            <span id="btnText">🔓 تسجيل الدخول</span>
-            <div class="loading-spinner" id="loadingSpinner"></div>
-        </button>
+        <button type="submit" class="login-btn" id="loginBtn">🔓 تسجيل الدخول</button>
     </form>
 
-    <!-- تذييل الصفحة -->
     <div class="footer">
         <p class="footer-text">
             برمجة وتطوير: <strong>عصام المهدي</strong><br>
             📱 <a href="https://wa.me/967779551518" class="footer-link">779551518</a>
-            <br><br>
-            <small style="color: #ccc;">v1.0 | 2026</small>
+            <br><small style="color: #ccc;">v2.0 Firebase | 2026</small>
         </p>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { firebaseConfig, errorMessages } from "./config/firebase-config.js";
+    import { authService } from "./js/auth-service.js";
+    import { errorMessages } from "./config/firebase-config.js";
 
-    // 🚀 تهيئة Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // ✅ التحقق من حالة المستخدم عند تحميل الصفحة
-    onAuthStateChanged(auth, (user) => {
+    authService.onAuthStateChanged((user) => {
         if (user) {
-            // المستخدم مسجل دخول بالفعل
             console.log('✅ مستخدم مسجل دخول:', user.email);
-            saveUserToLocalStorage(user);
-            // إعادة التوجيه بعد 1 ثانية
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 1000);
         }
     });
 
-    /**
-     * 🔐 دالة التعامل مع تسجيل الدخول
-     */
     window.handleLogin = async function(event) {
         event.preventDefault();
 
@@ -321,91 +237,34 @@
         const errorDiv = document.getElementById('errorMessage');
         const successDiv = document.getElementById('successMessage');
         const loginBtn = document.getElementById('loginBtn');
-        const btnText = document.getElementById('btnText');
-        const spinner = document.getElementById('loadingSpinner');
 
-        // 🔄 إخفاء الرسائل السابقة
         errorDiv.style.display = 'none';
         successDiv.style.display = 'none';
 
-        // ✅ التحقق من صحة البيانات
         if (!email || !password) {
-            showError(errorDiv, '❌ يرجى ملء جميع الحقول المطلوبة');
+            showError(errorDiv, '❌ يرجى ملء جميع الحقول');
             return;
         }
 
-        if (!isValidEmail(email)) {
-            showError(errorDiv, '❌ البريد الإلكتروني غير صحيح');
-            return;
-        }
-
-        if (password.length < 6) {
-            showError(errorDiv, '❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-            return;
-        }
-
-        // 🔒 تعطيل الزر أثناء المعالجة
         loginBtn.disabled = true;
-        btnText.style.display = 'none';
-        spinner.style.display = 'block';
 
         try {
-            // 🔑 محاولة تسجيل الدخول
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // 💾 حفظ بيانات المستخدم محلياً
-            saveUserToLocalStorage(user);
-
-            // ✅ عرض رسالة النجاح
-            successDiv.textContent = `✅ مرحباً بك ${user.email}! جاري التحويل...`;
+            const { user, userData } = await authService.login(email, password);
+            authService.saveUserToLocalStorage(user, userData);
+            successDiv.textContent = `✅ مرحباً بك! جاري التحويل...`;
             successDiv.style.display = 'block';
-
-            // 🔄 إعادة التوجيه بعد ثانية واحدة
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 1500);
-
         } catch (error) {
-            // ❌ معالجة الأخطاء
             const errorCode = error.code;
             const errorMessage = errorMessages[errorCode] || error.message;
             showError(errorDiv, `❌ ${errorMessage}`);
-            console.error('❌ خطأ في تسجيل الدخول:', error);
-
         } finally {
-            // ✅ إعادة تفعيل الزر
             loginBtn.disabled = false;
-            btnText.style.display = 'inline';
-            spinner.style.display = 'none';
         }
     };
 
-    /**
-     * 💾 دالة حفظ بيانات المستخدم في LocalStorage
-     */
-    function saveUserToLocalStorage(user) {
-        const userData = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || 'مستخدم',
-            photoURL: user.photoURL || '',
-            loginTime: new Date().toISOString()
-        };
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-    }
-
-    /**
-     * ✅ دالة التحقق من صحة البريد الإلكتروني
-     */
-    function isValidEmail(email) {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(email);
-    }
-
-    /**
-     * ❌ دالة عرض رسالة الخطأ
-     */
     function showError(element, message) {
         element.textContent = message;
         element.style.display = 'block';
