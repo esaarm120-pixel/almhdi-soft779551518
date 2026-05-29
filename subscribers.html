@@ -1,201 +1,121 @@
 <script>
-
+// جلب البيانات من الذاكرة المحلية
 let subscribers = JSON.parse(localStorage.getItem("subscribers")) || [];
 
+// دالة حفظ البيانات
 function saveData(){
-localStorage.setItem(
-"subscribers",
-JSON.stringify(subscribers)
-);
+    localStorage.setItem("subscribers", JSON.stringify(subscribers));
 }
 
+// دالة عرض الجدول وتحديثه
 function renderTable(){
+    const table = document.getElementById("tableBody");
+    table.innerHTML = "";
 
-const table =
-document.getElementById("tableBody");
+    subscribers.forEach((sub, index) => {
+        // حساب الاستهلاك (الحالية - السابقة) وضمان عدم ظهور قيمة سالبة
+        const consume = Math.max(0, (sub.current || 0) - (sub.previous || 0));
+        // حساب المبلغ (الاستهلاك * 1000)
+        const amount = consume * 1000;
 
-table.innerHTML="";
-
-subscribers.forEach((sub,index)=>{
-
-const consume =
-Math.max(
-0,
-(sub.current||0)-(sub.previous||0)
-);
-
-const amount = consume*1000;
-
-table.innerHTML += `
-
-<tr>
-
-<td>${sub.meter}</td>
-
-<td>${sub.name}</td>
-
-<td>${sub.previous||0}</td>
-
-<td>${sub.current||0}</td>
-
-<td>${consume}</td>
-
-<td>${amount}</td>
-
-<td>
-
-<div class="dropdown">
-
-<button class="btn-dots"
-onclick="toggleMenu(event,'${index}')">
-
-⋮
-
-</button>
-
-<div id="menu-${index}"
-class="dropdown-content">
-
-<a href="#"
-onclick="editSub(${index})">
-
-✏️ تعديل
-
-</a>
-
-<a href="#"
-onclick="deleteSub(${index})">
-
-🗑 حذف
-
-</a>
-
-</div>
-
-</div>
-
-</td>
-
-</tr>
-
-`;
-
-});
-
+        table.innerHTML += `
+        <tr>
+            <td>${sub.meter}</td>
+            <td>${sub.name}</td>
+            <td>${sub.previous || 0}</td>
+            <td>${sub.current || 0}</td>
+            <td>${consume}</td>
+            <td>${amount}</td>
+            <td>
+                <div class="dropdown">
+                    <button class="btn-dots" onclick="toggleMenu(event, '${index}')">⋮</button>
+                    <div id="menu-${index}" class="dropdown-content">
+                        <a href="#" onclick="editSub(${index})">✏️ تعديل القراءة</a>
+                        <a href="#" onclick="actionWhatsApp(${index})">📱 إرسال واتساب</a>
+                        <a href="#" onclick="actionPDF(${index})">🖨️ طباعة PDF</a>
+                        <a href="#" onclick="deleteSub(${index})" style="color: red;">🗑️ حذف المشترك</a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        `;
+    });
 }
 
-document
-.getElementById("openAddModal")
-.onclick=function(){
+// إضافة مشترك جديد
+document.getElementById("openAddModal").onclick = function(){
+    const name = prompt("اسم المشترك:");
+    if (!name) return;
 
-const name=
-prompt("اسم المشترك");
+    const meter = prompt("رقم العداد:");
+    if (!meter) return;
 
-if(!name)return;
+    subscribers.push({
+        name: name,
+        meter: meter,
+        previous: 0,
+        current: 0
+    });
 
-const meter=
-prompt("رقم العداد");
-
-subscribers.push({
-
-name,
-
-meter,
-
-previous:0,
-
-current:0
-
-});
-
-saveData();
-
-renderTable();
-
+    saveData();
+    renderTable();
 };
 
+// تعديل القراءة الحالية وتحويل الحالية السابقة إلى سابقة
 function editSub(index){
+    const newRead = prompt("ادخل القراءة الحالية الجديدة:", subscribers[index].current);
+    if (newRead === null || newRead.trim() === "") return;
 
-const newRead=
-prompt(
-"ادخل القراءة الحالية",
-subscribers[index].current
-);
+    subscribers[index].previous = subscribers[index].current;
+    subscribers[index].current = Number(newRead);
 
-if(newRead===null)return;
-
-subscribers[index].previous =
-subscribers[index].current;
-
-subscribers[index].current =
-Number(newRead);
-
-saveData();
-
-renderTable();
-
+    saveData();
+    renderTable();
 }
 
+// حذف مشترك
 function deleteSub(index){
+    if (confirm("هل أنت متأكد من حذف هذا المشترك نهائياً؟")){
+        subscribers.splice(index, 1);
+        saveData();
+        renderTable();
+    }
+}
 
-if(confirm("حذف المشترك؟")){
+// دالة التحكم بفتح وإغلاق القائمة المنبثقة عند الضغط على زر ⋮
+function toggleMenu(event, id){
+    event.stopPropagation(); // منع انتشار الحدث لغلق القائمة فوراً
 
-subscribers.splice(index,1);
+    // إغلاق أي قائمة أخرى مفتوحة
+    document.querySelectorAll('.dropdown-content').forEach(menu => {
+        if (menu.id !== 'menu-' + id){
+            menu.classList.remove('show');
+        }
+    });
 
-saveData();
+    // تبديل ظهور القائمة الحالية
+    const currentMenu = document.getElementById('menu-' + id);
+    if (currentMenu) {
+        currentMenu.classList.toggle('show');
+    }
+}
 
+// إغلاق القوائم المنبثقة عند الضغط في أي مكان خارجها في الشاشة
+window.onclick = function(){
+    document.querySelectorAll('.dropdown-content').forEach(menu => {
+        menu.classList.remove('show');
+    });
+}
+
+// تشغيل دالة بناء الجدول عند تحميل الصفحة لأول مرة
 renderTable();
 
+// دوال مؤقتة للأزرار الجديدة تمهيداً لربطها بالكامل
+function actionWhatsApp(index) {
+    alert("جاري تجهيز إرسال الواتساب للمشترك: " + subscribers[index].name);
 }
 
+function actionPDF(index) {
+    alert("جاري تجهيز طباعة PDF للمشترك: " + subscribers[index].name);
 }
-
-function toggleMenu(event,id){
-
-event.stopPropagation();
-
-document
-.querySelectorAll(
-'.dropdown-content'
-)
-.forEach(menu=>{
-
-if(menu.id!=='menu-'+id){
-
-menu.classList.remove(
-'show'
-);
-
-}
-
-});
-
-document
-.getElementById(
-'menu-'+id
-)
-.classList.toggle(
-'show'
-);
-
-}
-
-window.onclick=function(){
-
-document
-.querySelectorAll(
-'.dropdown-content'
-)
-.forEach(menu=>{
-
-menu.classList.remove(
-'show'
-);
-
-});
-
-}
-
-renderTable();
-
 </script>
