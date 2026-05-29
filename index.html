@@ -3,103 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام المحاسبي - تسجيل الدخول</title>
+    <title>مشروع مياه الحسينية - تسجيل الدخول</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-            box-sizing: border-box;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 24px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #666;
-        }
-        input[type="email"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .error-message {
-            color: red;
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .logo { font-size: 50px; margin-bottom: 10px; }
+        h2 { color: #333; margin-bottom: 20px; font-size: 22px; }
+        .form-group { margin-bottom: 15px; text-align: right; }
+        label { display: block; margin-bottom: 5px; color: #666; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #0056b3; }
+        .error { color: red; margin-top: 10px; font-size: 14px; }
+        .footer-credits { margin-top: 20px; font-size: 12px; color: #777; }
     </style>
 </head>
 <body>
-
 <div class="login-container">
-    <h2>تسجيل الدخول للنظام</h2>
+    <div class="logo">🚰</div>
+    <h2>تسجيل الدخول للنظام المحاسبي</h2>
     <div class="form-group">
-        <label for="email">البريد الإلكتروني:</label>
+        <label>البريد الإلكتروني:</label>
         <input type="email" id="email" placeholder="example@test.com">
     </div>
     <div class="form-group">
-        <label for="password">كلمة المرور:</label>
+        <label>كلمة المرور:</label>
         <input type="password" id="password" placeholder="******">
     </div>
-    <button id="loginBtn">دخول</button>
-    <div class="error-message" id="errorMessage"></div>
+    <button id="loginBtn">تسجيل الدخول 🔓</button>
+    <div class="error" id="errorMessage"></div>
+    <div class="footer-credits">برمجة وتطوير: عصام المهدي <br> <a href="https://wa.me/967779551518" style="color: #007bff; text-decoration: none;">779551518</a></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // إعدادات Firebase الخاصة بمشروعك
     const firebaseConfig = {
       apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
       authDomain: "almhdi-soft779551518.firebaseapp.com",
       projectId: "almhdi-soft779551518",
       storageBucket: "almhdi-soft779551518.firebasestorage.app",
       messagingSenderId: "386533839313",
-      appId: "1:386533839313:web:575bc9978c0e38ffd950f0",
-      measurementId: "G-MZSN60VZ63"
+      appId: "1:386533839313:web:575bc9978c0e38ffd950f0"
     };
 
-    // تهيئة Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // تفعيل زر تسجيل الدخول
     document.getElementById('loginBtn').addEventListener('click', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -107,16 +58,9 @@
         errorMessage.innerText = "";
 
         signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // نجاح تسجيل الدخول والانتقال فوراً للديشبورد
-                window.location.href = "dashboard.html";
-            })
-            .catch((error) => {
-                // فشل تسجيل الدخول
-                errorMessage.innerText = "خطأ: تأكد من البريد الإلكتروني أو كلمة المرور.";
-            });
+            .then(() => { window.location.href = "dashboard.html"; })
+            .catch(() => { errorMessage.innerText = "خطأ: تأكد من البيانات المحفوظة للبريد وكلمة المرور."; });
     });
 </script>
-
 </body>
 </html>
