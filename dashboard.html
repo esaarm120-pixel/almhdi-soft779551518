@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - مشروع المياه</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eef2f7;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 80px; /* مساحة للزر السفلي */
+        }
+        .marquee-text {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .marquee-text span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 15s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(100%, 0); }
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .header-side { width: 35%; }
+        .header-center { width: 25%; text-align: center; }
+        .logo-placeholder {
+            width: 80px; height: 80px; border: 2px dashed #007bff;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; margin: 0 auto; color: #007bff; font-size: 12px;
+        }
+        .info-item { margin-bottom: 8px; color: #555; }
+        
+        /* زر الإعدادات أسفل الشاشة */
+        .settings-btn {
+            position: fixed; bottom: 20px; left: 20px;
+            background-color: #333; color: white; padding: 12px 20px;
+            border: none; border-radius: 50px; cursor: pointer; font-size: 14px;
+        }
+        
+        /* النافذة المنبثقة للإعدادات */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 8px;
+            width: 90%; max-width: 400px; box-sizing: border-box;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #666; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .save-btn { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="marquee-text">
+        <span>برمجة وتطوير: عصام المهدي <a href="https://wa.me/967779551518" style="color: yellow; text-decoration: none;">779551518</a></span>
+    </div>
+
+    <div class="header-container">
+        <div class="header-side">
+            <div class="info-item"><strong>المشروع:</strong> <span id="lblProjectName">لم يتم التحديد</span></div>
+            <div class="info-item"><strong>المدير:</strong> <span id="lblManagerName">لم يتم التحديد</span></div>
+        </div>
+        <div class="header-center">
+            <div class="logo-placeholder">شعار المشروع</div>
+        </div>
+        <div class="header-side" style="text-align: left;">
+            <div class="info-item"><strong>المحافظة:</strong> <span id="lblGovernorate">لم يتم التحديد</span></div>
+            <div class="info-item"><strong>المديرية:</strong> <span id="lblDistrict">لم يتم التحديد</span></div>
+            <div class="info-item"><strong>القرية:</strong> <span id="lblVillage">لم يتم التحديد</span></div>
+        </div>
+    </div>
+
+    <button class="settings-btn" id="openSettingsBtn">⚙️ إعدادات التطبيق</button>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h3>⚙️ إعدادات بيانات المشروع</h3>
+            <div class="form-group"><label>اسم المشروع:</label><input type="text" id="txtProjectName"></div>
+            <div class="form-group"><label>اسم مدير المشروع:</label><input type="text" id="txtManagerName"></div>
+            <div class="form-group"><label>المحافظة:</label><input type="text" id="txtGovernorate"></div>
+            <div class="form-group"><label>المديرية:</label><input type="text" id="txtDistrict"></div>
+            <div class="form-group"><label>القرية:</label><input type="text" id="txtVillage"></div>
+            <button class="save-btn" id="saveSettingsBtn">حفظ البيانات</button>
+            <button style="width:100%; margin-top:10px; background:#ccc; border:none; padding:10px; border-radius:4px; cursor:pointer;" id="closeSettingsBtn">إلغاء</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // كود الـ JavaScript الخاص بفتح وإغلاق النافذة
+        const modal = document.getElementById('settingsModal');
+        document.getElementById('openSettingsBtn').addEventListener('click', () => modal.style.display = 'flex');
+        document.getElementById('closeSettingsBtn').addEventListener('click', () => modal.style.display = 'none');
+        
+        document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+            // سنقوم بربط هذا الجزء بـ Firebase لقراءة وحفظ البيانات لاحقاً
+            document.getElementById('lblProjectName').innerText = document.getElementById('txtProjectName').value;
+            document.getElementById('lblManagerName').innerText = document.getElementById('txtManagerName').value;
+            document.getElementById('lblGovernorate').innerText = document.getElementById('txtGovernorate').value;
+            document.getElementById('lblDistrict').innerText = document.getElementById('txtDistrict').value;
+            document.getElementById('lblVillage').innerText = document.getElementById('txtVillage').value;
+            modal.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
