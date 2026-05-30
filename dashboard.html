@@ -3,75 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم مشروع المياه</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>نظام مياه الحسينية</title>
     <style>
-        body { background: #eef2f7; font-family: Arial, sans-serif; }
-        .sidebar { min-height: 100vh; background: #2c3e50; color: #fff; width: 250px; padding: 20px; }
-        .card { border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .nav-link { color: #bdc3c7; margin-bottom: 10px; border-radius: 5px; }
-        .nav-link:hover { color: #fff; background: #34495e; }
-        .marquee-text { background: #007bff; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 15px; }
-        .menu-btn { background-color: #007bff; color: white; padding: 15px; border: none; border-radius: 8px; width: 100%; margin-bottom: 10px; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .stats-container { display: flex; gap: 15px; margin-bottom: 20px; }
+        .card { flex: 1; background: #fff; padding: 25px 15px; border-radius: 15px; text-align: center; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-bottom: 5px solid #007bff; }
+        .card h4 { margin: 0; font-size: 14px; color: #777; }
+        .card span { font-size: 22px; font-weight: bold; color: #333; display: block; margin-top: 10px; }
+        .btn-menu { width: 100%; padding: 20px; margin-bottom: 15px; border: none; border-radius: 12px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-weight: 600; color: #444; text-align: right; cursor: pointer; transition: 0.3s; }
+        .btn-menu::before { content: '▸'; margin-left: 10px; color: #007bff; }
     </style>
 </head>
 <body>
 
-<div class="d-flex">
-    <div class="sidebar">
-        <h4>🚰 نظام الحسينية</h4>
-        <hr>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="#"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a>
-            <a class="nav-link" href="subscribers.html"><i class="fas fa-users"></i> المشتركين</a>
-            <a class="nav-link" href="expenses.html"><i class="fas fa-money-bill"></i> المصروفات</a>
-            <hr>
-            <a class="nav-link text-danger" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> خروج</a>
-        </nav>
+    <div class="stats-container">
+        <div class="card">
+            <h4>الصندوق العام</h4>
+            <span id="cashBalance">٠ ر.ي</span>
+        </div>
+        <div class="card" style="border-bottom-color: #28a745;">
+            <h4>صندوق الصرافة</h4>
+            <span id="exchangeBalance">٠ ر.ي</span>
+        </div>
     </div>
 
-    <div class="container-fluid p-4">
-        <div class="marquee-text">برمجة وتطوير: عصام المهدي | 779551518</div>
+    <button class="btn-menu" onclick="location.href='subscribers.html'">👥 المشتركين</button>
+    <button class="btn-menu" onclick="location.href='expenses.html'">📉 المصروفات</button>
+    <button class="btn-menu" onclick="location.href='readings.html'">💧 القراءات</button>
+    <button class="btn-menu" onclick="location.href='receipts.html'">💵 سند قبض وتقارير</button>
+    <button class="btn-menu" style="color: #dc3545;" id="logoutBtn">🚪 خروج</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+        import { logoutUser } from "./js/auth-manager.js";
+
+        // --- البيانات الخاصة بك مدمجة هنا مباشرة ---
+        const firebaseConfig = {
+            apiKey: "AIzaSy...", 
+            authDomain: "your-project.firebaseapp.com",
+            databaseURL: "https://your-project.firebaseio.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // ربط البيانات
+        onValue(ref(db, 'finances/cash'), (s) => document.getElementById('cashBalance').innerText = (s.val() || 0) + ' ر.ي');
+        onValue(ref(db, 'finances/exchange'), (s) => document.getElementById('exchangeBalance').innerText = (s.val() || 0) + ' ر.ي');
         
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card p-4 bg-primary text-white">
-                    <h6>الصندوق العام</h6>
-                    <h3 id="cashBalance">0 ر.ي</h3>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card p-4 bg-success text-white">
-                    <h6>صندوق الصرافة</h6>
-                    <h3 id="exchangeBalance">0 ر.ي</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-md-6"><button class="menu-btn" onclick="location.href='readings.html'">💧 القراءات</button></div>
-            <div class="col-md-6"><button class="menu-btn" onclick="location.href='receipts.html'">💵 سند قبض وتقارير</button></div>
-        </div>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
-    import { logoutUser } from "./js/auth-manager.js";
-    import { firebaseConfig } from "./config/firebase-config.js"; // استدعاء إعداداتك من ملف الكونفيج
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // ربط الأرصدة
-    onValue(ref(db, 'finances/cash'), (s) => document.getElementById('cashBalance').innerText = (s.val() || 0) + ' ر.ي');
-    onValue(ref(db, 'finances/exchange'), (s) => document.getElementById('exchangeBalance').innerText = (s.val() || 0) + ' ر.ي');
-
-    // تفعيل زر الخروج
-    document.getElementById('logoutBtn').addEventListener('click', logoutUser);
-</script>
-
+        document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+    </script>
 </body>
 </html>
