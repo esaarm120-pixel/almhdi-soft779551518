@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المدير</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: right; }
+        th { background-color: #333; color: white; }
+        .btn-back { background: #333; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>⚙️ لوحة تحكم السوبر أدمن</h1>
+        <button class="btn-back" onclick="window.location.href='dashboard.html'">العودة للوحة الرئيسية</button>
+
+        <table id="users-table">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الدور (Role)</th>
+                </tr>
+            </thead>
+            <tbody id="users-body">
+                <tr><td colspan="3">جاري تحميل البيانات...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { isSuperAdmin } from "./js/auth-system.js";
+        import { userManagementService } from "./js/auth-service.js";
+
+        // 1. التأكد من صلاحية الدخول (الحماية)
+        if (!isSuperAdmin()) {
+            alert("❌ غير مصرح لك بالدخول!");
+            window.location.href = "dashboard.html";
+        }
+
+        // 2. تحميل البيانات
+        async function loadData() {
+            try {
+                const users = await userManagementService.getAllUsers();
+                const tbody = document.getElementById('users-body');
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.displayName || '---'}</td>
+                        <td>${user.email}</td>
+                        <td><strong>${user.role}</strong></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("خطأ في التحميل:", err);
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
