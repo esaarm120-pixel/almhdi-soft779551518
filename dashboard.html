@@ -3,63 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم مشروع المياه</title>
+    <title>نظام مياه الحسينية - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #eef2f7; color: #333; margin: 0; padding: 15px; }
-        
-        /* شريط التمرير */
-        .marquee-text { background-color: #007bff; color: white; padding: 10px; text-align: center; font-weight: bold; overflow: hidden; border-radius: 4px; margin-bottom: 10px; }
-        
-        /* الترويسة */
-        .header-container { display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .logo-box { width: 70px; height: 70px; border: 2px dashed #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; }
-        
-        /* نظام الصناديق */
-        .funds-container { display: flex; gap: 10px; margin-top: 15px; }
-        .fund-card { flex: 1; background: #fff; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-right: 4px solid #007bff; }
-        
-        /* الأزرار */
-        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
-        .menu-btn { background-color: #007bff; color: white; padding: 15px 10px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: bold; }
-        .full-width-btn { grid-column: span 2; background-color: #28a745; }
-        
-        /* أزرار السفلية */
-        .footer-btns { display: flex; gap: 10px; margin-top: 15px; }
-        .action-btn { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+        body { background: #eef2f7; font-family: Arial, sans-serif; }
+        .sidebar { min-height: 100vh; background: #2c3e50; color: #fff; width: 250px; padding: 20px; }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .nav-link { color: #bdc3c7; margin-bottom: 10px; border-radius: 5px; }
+        .nav-link:hover { color: #fff; background: #34495e; }
+        .marquee-text { background: #007bff; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 15px; }
+        .menu-btn { background-color: #007bff; color: white; padding: 15px; border: none; border-radius: 8px; width: 100%; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="marquee-text">
-        برمجة وتطوير: عصام المهدي <a href="https://wa.me/967779551518" style="color: yellow; text-decoration: none;">779551518</a>
+<div class="d-flex">
+    <div class="sidebar">
+        <h4>🚰 نظام الحسينية</h4>
+        <hr>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="#"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a>
+            <a class="nav-link" href="subscribers.html"><i class="fas fa-users"></i> المشتركين</a>
+            <a class="nav-link" href="expenses.html"><i class="fas fa-money-bill"></i> المصروفات</a>
+            <hr>
+            <a class="nav-link text-danger" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> خروج</a>
+        </nav>
     </div>
 
-    <div class="header-container">
-        <div style="font-size: 13px;">المشروع: <strong>مياه قرية الحسينية</strong></div>
-        <div class="logo-box">🚰</div>
-        <button id="logoutBtn" style="background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:4px;">خروج</button>
-    </div>
+    <div class="container-fluid p-4">
+        <div class="marquee-text">برمجة وتطوير: عصام المهدي | 779551518</div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card p-4 bg-primary text-white">
+                    <h6>الصندوق العام</h6>
+                    <h3 id="cashBalance">0 ر.ي</h3>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-4 bg-success text-white">
+                    <h6>صندوق الصرافة</h6>
+                    <h3 id="exchangeBalance">0 ر.ي</h3>
+                </div>
+            </div>
+        </div>
 
-    <div class="funds-container">
-        <div class="fund-card">الصندوق العام<br><strong id="cashBalance">0 ر.ي</strong></div>
-        <div class="fund-card">صندوق الصرافة<br><strong id="exchangeBalance">0 ر.ي</strong></div>
+        <div class="row mt-3">
+            <div class="col-md-6"><button class="menu-btn" onclick="location.href='readings.html'">💧 القراءات</button></div>
+            <div class="col-md-6"><button class="menu-btn" onclick="location.href='receipts.html'">💵 سند قبض وتقارير</button></div>
+        </div>
     </div>
+</div>
 
-    <div class="grid-container">
-        <button class="menu-btn" onclick="location.href='subscribers.html'">👥 المشتركين</button>
-        <button class="menu-btn" onclick="location.href='employees.html'">👔 الموظفين</button>
-        <button class="menu-btn" onclick="location.href='expenses.html'">📉 المصروفات</button>
-        <button class="menu-btn" onclick="location.href='readings.html'">💧 القراءات</button>
-        <button class="menu-btn full-width-btn" onclick="location.href='receipts.html'">💵 سند قبض وتقارير</button>
-    </div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+    import { logoutUser } from "./js/auth-manager.js";
 
-    <div class="footer-btns">
-        <button class="action-btn" style="background:#6c757d;" onclick="location.href='settings.html'">⚙️ الإعدادات والألوان</button>
-    </div>
+    // 1. ضع بيانات الفايربيس الخاصة بك هنا
+    const firebaseConfig = {
+        databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com"
+    };
 
-    <script type="module">
-        import { logoutUser } from "./js/auth-manager.js";
-        document.getElementById('logoutBtn').addEventListener('click', logoutUser);
-    </script>
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // 2. ربط البيانات
+    onValue(ref(db, 'finances/cash'), (s) => document.getElementById('cashBalance').innerText = (s.val() || 0) + ' ر.ي');
+    onValue(ref(db, 'finances/exchange'), (s) => document.getElementById('exchangeBalance').innerText = (s.val() || 0) + ' ر.ي');
+
+    // 3. الخروج
+    document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+</script>
+
 </body>
 </html>
