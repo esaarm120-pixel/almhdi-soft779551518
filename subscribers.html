@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم الرئيسية</title>
+    <title>إدارة المشتركين</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background-color: #f5f5f5; }
@@ -21,40 +21,29 @@
         .navbar button { padding: 8px 15px; background: white; color: #007bff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .navbar button:hover { background: #f0f0f0; }
         
-        .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
         
         .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .header h2 { color: #333; margin-bottom: 10px; }
-        .user-info { display: flex; justify-content: space-between; font-size: 14px; color: #666; }
         
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
+        .search-bar { margin-bottom: 20px; }
+        .search-bar input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
         
-        .menu-btn {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: white;
-            padding: 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            transition: transform 0.2s;
-        }
+        .table-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
         
-        .menu-btn:hover { transform: translateY(-5px); }
-        .menu-btn.admin { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); }
-        .menu-btn.secondary { background: linear-gradient(135deg, #6c757d 0%, #545b62 100%); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #007bff; color: white; padding: 12px; text-align: right; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f9f9f9; }
         
-        .stats { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .stats h3 { margin-bottom: 15px; color: #333; }
+        .btn { padding: 6px 12px; margin: 0 2px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-edit { background: #28a745; color: white; }
+        .btn-delete { background: #dc3545; color: white; }
+        .btn-back { background: #6c757d; color: white; }
         
-        .loading { text-align: center; padding: 20px; }
+        .btn:hover { opacity: 0.8; }
+        
+        .loading { text-align: center; padding: 40px; }
         .spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #007bff;
@@ -70,39 +59,33 @@
 <body>
 
 <div class="navbar">
-    <h1>🚰 نظام إدارة المياه</h1>
-    <button onclick="logout()">🚪 تسجيل الخروج</button>
+    <h1>👥 إدارة المشتركين</h1>
+    <div>
+        <button onclick="goBack()" style="margin-right: 10px;">📊 العودة للوحة التحكم</button>
+        <button onclick="logout()">🚪 تسجيل الخروج</button>
+    </div>
 </div>
 
 <div class="container">
     <div class="header">
-        <h2>👋 أهلاً وسهلاً</h2>
-        <div class="user-info">
-            <div>👤 المستخدم: <strong id="userName">جاري التحميل...</strong></div>
-            <div>🔐 الدور: <strong id="userRole">جاري التحميل...</strong></div>
-            <div>📁 المشروع: <strong id="projectName">جاري التحميل...</strong></div>
-        </div>
+        <h2>قائمة المشتركين</h2>
+        <p>إجمالي المشتركين: <strong id="totalCount">0</strong></p>
     </div>
 
-    <div id="dashboardContent">
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 ابحث عن مشترك...">
+    </div>
+
+    <div id="tableContent">
         <div class="loading">
             <div class="spinner"></div>
-            <p>جاري تحميل لوحة التحكم...</p>
+            <p>جاري تحميل البيانات...</p>
         </div>
-    </div>
-
-    <div class="stats">
-        <h3>📊 الإحصائيات</h3>
-        <p>عدد المشتركين: <strong id="totalSubscribers">0</strong></p>
-        <p>عدد الموظفين: <strong id="totalEmployees">0</strong></p>
-        <p>إجمالي المصروفات: <strong id="totalExpenses">0</strong> ريال</p>
     </div>
 </div>
 
 <script type="module">
     import { authService } from "./js/auth-service.js";
-    import { userManagementService } from "./js/auth-service.js";
-    import { projectDataService } from "./js/project-service.js";
 
     // التحقق من المستخدم
     const currentUser = authService.getCurrentUser();
@@ -110,37 +93,54 @@
         window.location.href = "index.html";
     }
 
-    // عرض بيانات المستخدم
-    document.getElementById('userName').textContent = currentUser.displayName;
-    document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '🔐 مدير المشروع' : '👨‍💼 موظف';
-    document.getElementById('projectName').textContent = currentUser.projectId ? currentUser.projectId.substring(0, 10) : 'عام';
-
-    // بناء لوحة التحكم
-    async function loadDashboard() {
-        const content = document.getElementById('dashboardContent');
+    // تحميل المشتركين
+    async function loadSubscribers() {
+        const tableContent = document.getElementById('tableContent');
         
-        if (currentUser.role === 'admin') {
-            // قائمة Admin
-            content.innerHTML = `
-                <div class="menu-grid">
-                    <button class="menu-btn admin" onclick="window.location.href='subscribers.html'">👥 المشتركين</button>
-                    <button class="menu-btn admin" onclick="window.location.href='readings.html'">💧 القراءات</button>
-                    <button class="menu-btn admin" onclick="window.location.href='users-management.html'">👨‍💼 إدارة الموظفين</button>
-                    <button class="menu-btn admin" onclick="window.location.href='expenses.html'">💰 المصروفات</button>
+        try {
+            // هنا يمكنك استدعاء API أو قاعدة البيانات
+            // في الوقت الحالي سنعرض جدول فارغ
+            tableContent.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الرقم</th>
+                                <th>الاسم</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>رقم الهاتف</th>
+                                <th>العنوان</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscribersTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #999;">لا توجد بيانات متاحة حالياً</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             `;
-        } else {
-            // قائمة Operator/Viewer
-            content.innerHTML = `
-                <div class="menu-grid">
-                    <button class="menu-btn" onclick="window.location.href='subscribers.html'">👥 المشتركين</button>
-                    <button class="menu-btn" onclick="window.location.href='readings.html'">💧 القراءات</button>
-                </div>
-            `;
+            document.getElementById('totalCount').textContent = '0';
+        } catch (error) {
+            console.error('خطأ في تحميل البيانات:', error);
+            tableContent.innerHTML = '<p style="color: red; text-align: center;">حدث خطأ في تحميل البيانات</p>';
         }
     }
 
-    loadDashboard();
+    loadSubscribers();
+
+    // البحث
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        // سيتم تطبيق البحث هنا
+        console.log('البحث عن:', searchTerm);
+    });
+
+    // العودة للوحة التحكم
+    window.goBack = function() {
+        window.location.href = "dashboard.html";
+    };
 
     // تسجيل الخروج
     window.logout = async function() {
