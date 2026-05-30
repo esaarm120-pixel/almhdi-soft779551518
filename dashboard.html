@@ -6,60 +6,60 @@
     <title>لوحة تحكم مشروع المياه</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #eef2f7; color: #333; margin: 0; padding: 15px; }
-        .marquee-text { background-color: #007bff; color: white; padding: 10px; text-align: center; font-weight: bold; overflow: hidden; white-space: nowrap; border-radius: 4px; }
-        .marquee-text span { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; }
-        @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(100%, 0); } }
-        .header-container { display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .header-side { width: 40%; font-size: 14px; line-height: 1.6; }
-        .header-center { width: 20%; text-align: center; }
-        .logo-box { width: 70px; height: 70px; border: 2px dashed #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 32px; }
+        
+        /* شريط التمرير */
+        .marquee-text { background-color: #007bff; color: white; padding: 10px; text-align: center; font-weight: bold; overflow: hidden; border-radius: 4px; margin-bottom: 10px; }
+        
+        /* الترويسة */
+        .header-container { display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo-box { width: 70px; height: 70px; border: 2px dashed #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+        
+        /* نظام الصناديق */
+        .funds-container { display: flex; gap: 10px; margin-top: 15px; }
+        .fund-card { flex: 1; background: #fff; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-right: 4px solid #007bff; }
+        
+        /* الأزرار */
         .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
-        .menu-btn { background-color: #007bff; color: white; padding: 18px 10px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; text-align: center; font-weight: bold; box-shadow: 0 3px 6px rgba(0,0,0,0.1); transition: 0.2s; }
-        .menu-btn:hover { background-color: #0056b3; }
+        .menu-btn { background-color: #007bff; color: white; padding: 15px 10px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: bold; }
         .full-width-btn { grid-column: span 2; background-color: #28a745; }
-        .stats-container { background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .footer-btns { display: flex; justify-content: space-between; margin-top: 15px; }
-        .action-btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; background-color: #333; color: white; font-weight: bold; }
+        
+        /* أزرار السفلية */
+        .footer-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .action-btn { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
     </style>
 </head>
 <body>
 
     <div class="marquee-text">
-        <span>برمجة وتطوير: عصام المهدي <a href="https://wa.me/967779551518" style="color: yellow; text-decoration: none;">779551518</a></span>
+        برمجة وتطوير: عصام المهدي <a href="https://wa.me/967779551518" style="color: yellow; text-decoration: none;">779551518</a>
     </div>
 
     <div class="header-container">
-        <div class="header-side">
-            <div><strong>المشروع:</strong> <span id="lblProject">مياه قرية الحسينية</span></div>
-            <div><strong>المدير:</strong> <span id="lblManager">كامل المهدي</span></div>
-        </div>
-        <div class="header-center">
-            <div class="logo-box">🚰</div>
-        </div>
-        <div class="header-side" style="text-align: left;">
-            <div><strong>المحافظة:</strong> <span id="lblGov">الحديدة</span></div>
-            <div><strong>المديرية:</strong> <span id="lblDist">المنصورية</span></div>
-            <div><strong>القرية:</strong> <span id="lblVil">الحسينية</span></div>
-        </div>
+        <div style="font-size: 13px;">المشروع: <strong>مياه قرية الحسينية</strong></div>
+        <div class="logo-box">🚰</div>
+        <button id="logoutBtn" style="background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:4px;">خروج</button>
+    </div>
+
+    <div class="funds-container">
+        <div class="fund-card">الصندوق العام<br><strong id="cashBalance">0 ر.ي</strong></div>
+        <div class="fund-card">صندوق الصرافة<br><strong id="exchangeBalance">0 ر.ي</strong></div>
     </div>
 
     <div class="grid-container">
-        <button class="menu-btn" onclick="window.location.href='subscribers.html'">👥 إدارة المشتركين</button>
-        <button class="menu-btn" onclick="window.location.href='employees.html'">👔 شؤون الموظفين</button>
-        <button class="menu-btn" onclick="window.location.href='expenses.html'">📉 قسم المصروفات</button>
-        <button class="menu-btn" onclick="window.location.href='subscribers.html?action=reading'">💧 قراءات الاستهلاك</button>
-        <button class="menu-btn full-width-btn" onclick="alert('سندات القبض والتقارير الشهرية والسنوية قيد المعالجة التلقائية مع الفايربيس')">💵 إصدار سند قبض وتقارير مالية</button>
-    </div>
-
-    <div class="stats-container">
-        <h3>📊 حالة المشروع الحالية (تحديث تلقائي)</h3>
-        <p>عدد المشتركين الفعليين: <strong id="totalSub">150+</strong> | الاستهلاك الإجمالي: <strong id="totalUsage">0 وحدة</strong></p>
-        <p>صافي الأرباح المتوقعة: <strong style="color: green;">بالريال اليمني 🇾🇪</strong></p>
+        <button class="menu-btn" onclick="location.href='subscribers.html'">👥 المشتركين</button>
+        <button class="menu-btn" onclick="location.href='employees.html'">👔 الموظفين</button>
+        <button class="menu-btn" onclick="location.href='expenses.html'">📉 المصروفات</button>
+        <button class="menu-btn" onclick="location.href='readings.html'">💧 القراءات</button>
+        <button class="menu-btn full-width-btn" onclick="location.href='receipts.html'">💵 سند قبض وتقارير</button>
     </div>
 
     <div class="footer-btns">
-        <button class="action-btn" onclick="alert('إعدادات تغيير الألوان والأيقونات وتفعيل الوضع الليلي يتم حفظها محلياً في جهازك')">⚙️ إعدادات النظام والوضع الليلي</button>
+        <button class="action-btn" style="background:#6c757d;" onclick="location.href='settings.html'">⚙️ الإعدادات والألوان</button>
     </div>
 
+    <script type="module">
+        import { logoutUser } from "./js/auth-manager.js";
+        document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+    </script>
 </body>
 </html>
