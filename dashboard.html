@@ -7,11 +7,20 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         
-        /* الترويسة المحدثة */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        .header h2 { margin: 0; font-size: 16px; color: #aaa; font-weight: normal; } /* اسم المشروع هنا */
-        .header .user-signature { font-size: 14px; color: #00e676; font-weight: bold; } /* توقيعك هنا */
-        .settings-icon { font-size: 20px; color: #aaa; cursor: pointer; }
+        /* ترويسة ثابتة وواضحة */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: #1e1e1e; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 25px; 
+            border: 1px solid #333;
+        }
+        .user-signature { font-size: 14px; color: #00e676; font-weight: bold; }
+        .project-name { font-size: 16px; color: #fff; font-weight: bold; }
+        .settings-icon { font-size: 22px; cursor: pointer; }
 
         .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         .card { background: #1e1e1e; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #333; }
@@ -19,17 +28,16 @@
         .card span { font-size: 18px; font-weight: bold; color: #00e676; display: block; margin-top: 8px; }
         
         .menu-btn { width: 100%; background: #1e1e1e; border: 1px solid #333; color: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; font-size: 15px; text-align: right; cursor: pointer; }
-        
         .signature { text-align: center; color: #555; font-size: 12px; margin-top: 30px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
+    <header class="header">
         <div class="user-signature">عصام المهدي</div>
-        <h2 id="projectName">اسم المشروع</h2>
+        <div class="project-name" id="projectName">جارٍ التحميل...</div>
         <div class="settings-icon" onclick="location.href='settings.html'">⚙️</div>
-    </div>
+    </header>
 
     <div class="stats-container">
         <div class="card">
@@ -54,7 +62,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
         
-        // **بياناتك هنا**
+        // ضع بيانات الفايربيس الخاصة بك هنا
         const firebaseConfig = {
             apiKey: "AIzaSy...", 
             authDomain: "your-project.firebaseapp.com",
@@ -68,7 +76,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // جلب اسم المشروع من الفايربيس (إعدادات المشروع)
+        // جلب اسم المشروع
         onValue(ref(db, 'settings/projectName'), (s) => {
             document.getElementById('projectName').innerText = s.val() || "مشروع جديد";
         });
