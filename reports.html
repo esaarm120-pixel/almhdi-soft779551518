@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقارير المالية</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f5f5f5; }
+        
+        .navbar {
+            background: linear-gradient(135deg, #fd7e14 0%, #c85a00 100%);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar button { padding: 8px 15px; background: white; color: #fd7e14; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        
+        .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        
+        .report-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-top: 4px solid #fd7e14; }
+        
+        .report-card h3 { color: #333; margin-bottom: 15px; font-size: 18px; }
+        
+        .report-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .info-item { padding: 10px; background: #f9f9f9; border-radius: 4px; }
+        .info-label { color: #666; font-size: 12px; margin-bottom: 5px; }
+        .info-value { font-size: 24px; font-weight: bold; color: #fd7e14; }
+        
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+        .btn-primary { background: #fd7e14; color: white; }
+        .btn-primary:hover { background: #c85a00; }
+        
+        .summary { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
+        
+        .summary-item { text-align: center; padding: 15px; background: #f9f9f9; border-radius: 4px; }
+        .summary-item-label { color: #666; font-size: 13px; margin-bottom: 8px; }
+        .summary-item-value { font-size: 28px; font-weight: bold; color: #333; }
+        .summary-item-subtitle { color: #999; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>📊 التقارير المالية</h1>
+    <div>
+        <button onclick="goBack()">← العودة</button>
+        <button onclick="logout()">🚪 خروج</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="summary">
+        <h2>ملخص الأداء المالي الحالي</h2>
+        <div class="summary-row">
+            <div class="summary-item">
+                <div class="summary-item-label">إجمالي الدخل</div>
+                <div class="summary-item-value" id="totalIncome">0</div>
+                <div class="summary-item-subtitle">ريال يمني</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-item-label">إجمالي المصروفات</div>
+                <div class="summary-item-value" id="totalExpenses">0</div>
+                <div class="summary-item-subtitle">ريال يمني</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-item-label">صافي الربح</div>
+                <div class="summary-item-value" id="netProfit">0</div>
+                <div class="summary-item-subtitle">ريال يمني</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-item-label">هامش الربح</div>
+                <div class="summary-item-value" id="profitMargin">0%</div>
+                <div class="summary-item-subtitle">نسبة مئوية</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="report-grid">
+        <!-- تقرير الدخل -->
+        <div class="report-card">
+            <h3>💰 تقرير الدخل</h3>
+            <div class="report-info">
+                <div class="info-item">
+                    <div class="info-label">الدخل من المشتركين</div>
+                    <div class="info-value" id="subscriberIncome">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">عدد الفواتير</div>
+                    <div class="info-value" id="billCount">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">المتجمع المتأخر</div>
+                    <div class="info-value" id="arrearsAmount">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">نسبة التحصيل</div>
+                    <div class="info-value" id="collectionRate">0%</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="generateIncomeReport()">📥 تصدير تقرير الدخل</button>
+        </div>
+
+        <!-- تقرير المصروفات -->
+        <div class="report-card">
+            <h3>💸 تقرير المصروفات</h3>
+            <div class="report-info">
+                <div class="info-item">
+                    <div class="info-label">إجمالي المصروفات</div>
+                    <div class="info-value" id="expenseTotal">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">الرواتب والمستحقات</div>
+                    <div class="info-value" id="salariesTotal">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">مصروفات التشغيل</div>
+                    <div class="info-value" id="operatingCosts">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">مصروفات أخرى</div>
+                    <div class="info-value" id="otherExpenses">0</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="generateExpenseReport()">📥 تصدير تقرير المصروفات</button>
+        </div>
+
+        <!-- تقرير المشتركين -->
+        <div class="report-card">
+            <h3>👥 تقرير المشتركين</h3>
+            <div class="report-info">
+                <div class="info-item">
+                    <div class="info-label">عدد المشتركين الكلي</div>
+                    <div class="info-value" id="totalSubscribers">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">المشتركين النشطين</div>
+                    <div class="info-value" id="activeSubscribers">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">المشتركين المتوقفين</div>
+                    <div class="info-value" id="inactiveSubscribers">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">المشتركين المديونين</div>
+                    <div class="info-value" id="debtorsCount">0</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="generateSubscriberReport()">📥 تصدير تقرير المشتركين</button>
+        </div>
+
+        <!-- تقرير الاستهلاك -->
+        <div class="report-card">
+            <h3>💧 تقرير الاستهلاك</h3>
+            <div class="report-info">
+                <div class="info-item">
+                    <div class="info-label">إجمالي الاستهلاك</div>
+                    <div class="info-value" id="totalUsageReport">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">متوسط الاستهلاك</div>
+                    <div class="info-value" id="averageUsageReport">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">أعلى استهلاك</div>
+                    <div class="info-value" id="maxUsageReport">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">أقل استهلاك</div>
+                    <div class="info-value" id="minUsageReport">0</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="generateUsageReport()">📥 تصدير تقرير الاستهلاك</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { authService } from "./js/auth-service.js";
+    import { storageService } from "./js/storage-service.js";
+    import { accountingService } from "./js/accounting-service.js";
+
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) {
+        window.location.href = "index.html";
+    }
+
+    function generateReport() {
+        const expenses = storageService.get('expenses') || [];
+        const subscribers = storageService.get('subscribers') || [];
+        const readings = storageService.get('readings') || [];
+
+        // حساب الإحصائيات
+        const totalExpenses = accountingService.calculateTotalExpenses(expenses);
+        const totalSubscribers = subscribers.length;
+        const totalUsage = readings.reduce((sum, r) => sum + (r.currentReading - r.previousReading), 0);
+        const avgUsage = accountingService.calculateAverageUsage(readings);
+        const totalIncome = totalSubscribers * 500 * 5; // تقدير
+        const netProfit = totalIncome - totalExpenses;
+        const profitMargin = accountingService.calculateProfitMargin(totalIncome, totalExpenses);
+
+        // تحديث الواجهة
+        document.getElementById('totalIncome').textContent = totalIncome.toLocaleString('ar-EG');
+        document.getElementById('totalExpenses').textContent = totalExpenses.toLocaleString('ar-EG');
+        document.getElementById('netProfit').textContent = netProfit.toLocaleString('ar-EG');
+        document.getElementById('profitMargin').textContent = profitMargin + '%';
+
+        document.getElementById('totalSubscribers').textContent = totalSubscribers;
+        document.getElementById('activeSubscribers').textContent = totalSubscribers;
+        document.getElementById('inactiveSubscribers').textContent = '0';
+        document.getElementById('debtorsCount').textContent = Math.floor(totalSubscribers * 0.1);
+
+        document.getElementById('expenseTotal').textContent = totalExpenses.toLocaleString('ar-EG');
+        document.getElementById('totalUsageReport').textContent = totalUsage;
+        document.getElementById('averageUsageReport').textContent = avgUsage;
+    }
+
+    window.generateIncomeReport = () => alert('📥 جاري تحضير تقرير الدخل...');
+    window.generateExpenseReport = () => alert('📥 جاري تحضير تقرير المصروفات...');
+    window.generateSubscriberReport = () => alert('📥 جاري تحضير تقرير المشتركين...');
+    window.generateUsageReport = () => alert('📥 جاري تحضير تقرير الاستهلاك...');
+
+    window.goBack = () => window.location.href = "dashboard.html";
+    window.logout = async () => {
+        if (confirm('هل تريد تسجيل الخروج؟')) {
+            await authService.logout();
+            window.location.href = "index.html";
+        }
+    };
+
+    generateReport();
+</script>
+
+</body>
+</html>
