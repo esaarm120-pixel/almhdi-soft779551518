@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مياه الحسينية</title>
+    <title>لوحة التحكم - الحسينية</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .stats-container { display: flex; gap: 15px; margin-bottom: 20px; }
-        .card { flex: 1; background: #fff; padding: 25px 15px; border-radius: 15px; text-align: center; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-bottom: 5px solid #007bff; }
-        .card h4 { margin: 0; font-size: 14px; color: #777; }
-        .card span { font-size: 22px; font-weight: bold; color: #333; display: block; margin-top: 10px; }
-        .btn-menu { width: 100%; padding: 20px; margin-bottom: 15px; border: none; border-radius: 12px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-weight: 600; color: #444; text-align: right; cursor: pointer; transition: 0.3s; }
-        .btn-menu::before { content: '▸'; margin-left: 10px; color: #007bff; }
+        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        
+        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #333; }
+        .card h4 { margin: 0; font-size: 13px; color: #aaa; }
+        .card span { font-size: 20px; font-weight: bold; color: #00e676; display: block; margin-top: 8px; }
+        
+        .menu-btn { width: 100%; background: #1e1e1e; border: 1px solid #333; color: white; padding: 18px; margin-bottom: 12px; border-radius: 12px; font-size: 16px; text-align: right; cursor: pointer; transition: 0.3s; }
+        .menu-btn:active { background: #333; }
+        
+        #logoutBtn { color: #ff5252; border-color: #500; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -21,24 +25,23 @@
             <h4>الصندوق العام</h4>
             <span id="cashBalance">٠ ر.ي</span>
         </div>
-        <div class="card" style="border-bottom-color: #28a745;">
+        <div class="card">
             <h4>صندوق الصرافة</h4>
             <span id="exchangeBalance">٠ ر.ي</span>
         </div>
     </div>
 
-    <button class="btn-menu" onclick="location.href='subscribers.html'">👥 المشتركين</button>
-    <button class="btn-menu" onclick="location.href='expenses.html'">📉 المصروفات</button>
-    <button class="btn-menu" onclick="location.href='readings.html'">💧 القراءات</button>
-    <button class="btn-menu" onclick="location.href='receipts.html'">💵 سند قبض وتقارير</button>
-    <button class="btn-menu" style="color: #dc3545;" id="logoutBtn">🚪 خروج</button>
+    <button class="menu-btn" onclick="location.href='subscribers.html'">👥 المشتركين</button>
+    <button class="menu-btn" onclick="location.href='expenses.html'">📉 المصروفات</button>
+    <button class="menu-btn" onclick="location.href='readings.html'">💧 القراءات</button>
+    <button class="menu-btn" onclick="location.href='receipts.html'">💵 سند قبض وتقارير</button>
+    <button class="menu-btn" id="logoutBtn">🚪 تسجيل الخروج</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
-        import { logoutUser } from "./js/auth-manager.js";
-
-        // --- البيانات الخاصة بك مدمجة هنا مباشرة ---
+        
+        // **ضع بياناتك هنا فقط**
         const firebaseConfig = {
             apiKey: "AIzaSy...", 
             authDomain: "your-project.firebaseapp.com",
@@ -52,11 +55,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // ربط البيانات
+        // جلب البيانات
         onValue(ref(db, 'finances/cash'), (s) => document.getElementById('cashBalance').innerText = (s.val() || 0) + ' ر.ي');
         onValue(ref(db, 'finances/exchange'), (s) => document.getElementById('exchangeBalance').innerText = (s.val() || 0) + ' ر.ي');
         
-        document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+        // الخروج
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
     </script>
 </body>
 </html>
+ 
