@@ -3,22 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - الحسينية</title>
+    <title>لوحة التحكم</title>
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         
+        /* الترويسة المحدثة */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .header h2 { margin: 0; font-size: 16px; color: #aaa; font-weight: normal; } /* اسم المشروع هنا */
+        .header .user-signature { font-size: 14px; color: #00e676; font-weight: bold; } /* توقيعك هنا */
+        .settings-icon { font-size: 20px; color: #aaa; cursor: pointer; }
+
         .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         .card { background: #1e1e1e; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #333; }
-        .card h4 { margin: 0; font-size: 13px; color: #aaa; }
-        .card span { font-size: 20px; font-weight: bold; color: #00e676; display: block; margin-top: 8px; }
+        .card h4 { margin: 0; font-size: 12px; color: #aaa; }
+        .card span { font-size: 18px; font-weight: bold; color: #00e676; display: block; margin-top: 8px; }
         
-        .menu-btn { width: 100%; background: #1e1e1e; border: 1px solid #333; color: white; padding: 18px; margin-bottom: 12px; border-radius: 12px; font-size: 16px; text-align: right; cursor: pointer; transition: 0.3s; }
-        .menu-btn:active { background: #333; }
+        .menu-btn { width: 100%; background: #1e1e1e; border: 1px solid #333; color: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; font-size: 15px; text-align: right; cursor: pointer; }
         
-        #logoutBtn { color: #ff5252; border-color: #500; margin-top: 20px; }
+        .signature { text-align: center; color: #555; font-size: 12px; margin-top: 30px; }
     </style>
 </head>
 <body>
+
+    <div class="header">
+        <div class="user-signature">عصام المهدي</div>
+        <h2 id="projectName">اسم المشروع</h2>
+        <div class="settings-icon" onclick="location.href='settings.html'">⚙️</div>
+    </div>
 
     <div class="stats-container">
         <div class="card">
@@ -35,13 +46,15 @@
     <button class="menu-btn" onclick="location.href='expenses.html'">📉 المصروفات</button>
     <button class="menu-btn" onclick="location.href='readings.html'">💧 القراءات</button>
     <button class="menu-btn" onclick="location.href='receipts.html'">💵 سند قبض وتقارير</button>
-    <button class="menu-btn" id="logoutBtn">🚪 تسجيل الخروج</button>
+    <button class="menu-btn" style="color: #ff5252;" id="logoutBtn">🚪 تسجيل الخروج</button>
+
+    <div class="signature">© 2026 جميع الحقوق محفوظة</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
         
-        // **ضع بياناتك هنا فقط**
+        // **بياناتك هنا**
         const firebaseConfig = {
             apiKey: "AIzaSy...", 
             authDomain: "your-project.firebaseapp.com",
@@ -55,11 +68,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // جلب البيانات
+        // جلب اسم المشروع من الفايربيس (إعدادات المشروع)
+        onValue(ref(db, 'settings/projectName'), (s) => {
+            document.getElementById('projectName').innerText = s.val() || "مشروع جديد";
+        });
+
+        // جلب الأرصدة
         onValue(ref(db, 'finances/cash'), (s) => document.getElementById('cashBalance').innerText = (s.val() || 0) + ' ر.ي');
         onValue(ref(db, 'finances/exchange'), (s) => document.getElementById('exchangeBalance').innerText = (s.val() || 0) + ' ر.ي');
         
-        // الخروج
         document.getElementById('logoutBtn').addEventListener('click', () => {
             window.location.href = 'index.html';
         });
