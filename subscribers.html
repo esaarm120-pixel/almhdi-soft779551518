@@ -36,11 +36,11 @@
         td { padding: 12px; border-bottom: 1px solid #eee; }
         tr:hover { background: #f9f9f9; }
         
-        .btn { padding: 6px 12px; margin: 0 2px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn { padding: 6px 12px; margin: 0 2px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
         .btn-edit { background: #28a745; color: white; }
         .btn-delete { background: #dc3545; color: white; }
-        .btn-back { background: #6c757d; color: white; }
-        
+        .btn-print { background: #17a2b8; color: white; }
+        .btn-whatsapp { background: #25d366; color: white; }
         .btn:hover { opacity: 0.8; }
         
         .loading { text-align: center; padding: 40px; }
@@ -54,6 +54,24 @@
             margin: 0 auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-active { background-color: #d4edda; color: #155724; }
+        .status-inactive { background-color: #f8d7da; color: #721c24; }
+
+        .error-message, .success-message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .error-message { background-color: #fee; color: #c33; }
+        .success-message { background-color: #efe; color: #3c3; }
     </style>
 </head>
 <body>
@@ -72,6 +90,9 @@
         <p>إجمالي المشتركين: <strong id="totalCount">0</strong></p>
     </div>
 
+    <div class="error-message" id="errorMessage"></div>
+    <div class="success-message" id="successMessage"></div>
+
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="🔍 ابحث عن مشترك...">
     </div>
@@ -86,69 +107,174 @@
 
 <script type="module">
     import { authService } from "./js/auth-service.js";
+    import { subscriberService } from "./js/subscriber-service.js";
+    import { checkPermissionOrRedirect, PERMISSIONS } from "./js/auth-system.js";
 
-    // التحقق من المستخدم
+    let allSubscribers = [];
+
+    // التحقق من المستخدم والصلاحيات
     const currentUser = authService.getCurrentUser();
     if (!currentUser) {
         window.location.href = "index.html";
     }
 
-    // تحميل المشتركين
+    // التحقق من صلاحية عرض المشتركين
+    checkPermissionOrRedirect(PERMISSIONS.VIEW_SUBSCRIBERS);
+
+    // تحميل المشتركين من Firestore
     async function loadSubscribers() {
         const tableContent = document.getElementById('tableContent');
         
         try {
-            // هنا يمكنك استدعاء API أو قاعدة البيانات
-            // في الوقت الحالي سنعرض جدول فارغ
-            tableContent.innerHTML = `
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>الرقم</th>
-                                <th>الاسم</th>
-                                <th>البريد الإلكتروني</th>
-                                <th>رقم الهاتف</th>
-                                <th>العنوان</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="subscribersTable">
-                            <tr>
-                                <td colspan="6" style="text-align: center; color: #999;">لا توجد بيانات متاحة حالياً</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            document.getElementById('totalCount').textContent = '0';
+            const subscribers = await subscriberService.getAllSubscribers();
+            allSubscribers = subscribers;
+
+            if (subscribers.length === 0) {
+                tableContent.innerHTML = `
+                    <div class="table-container">
+                        <table>
+                            <thead><tr>
+                                <th>الرقم</th><th>الاسم</th><th>البريد الإلكتروني</th><th>رقم الهاتف</th>
+                                <th>العنوان</th><th>الحالة</th><th>الإجراءات</th>
+                            </tr></thead>
+                            <tbody><tr>
+                                <td colspan="7" style="text-align: center; color: #999;">لا توجد بيانات متاحة حالياً</td>
+                            </tr></tbody>
+                        </table>
+                    </div>
+                `;
+                document.getElementById('totalCount').textContent = '0';
+                return;
+            }
+
+            renderTable(subscribers);
+            document.getElementById('totalCount').textContent = subscribers.length;
+
         } catch (error) {
-            console.error('خطأ في تحميل البيانات:', error);
-            tableContent.innerHTML = '<p style="color: red; text-align: center;">حدث خطأ في تحميل البيانات</p>';
+            console.error('❌ خطأ في تحميل البيانات:', error);
+            showError(`خطأ في تحميل البيانات: ${error.message}`);
         }
     }
 
-    loadSubscribers();
+    function renderTable(subscribers) {
+        let tableHTML = `
+            <div class="table-container">
+                <table>
+                    <thead><tr>
+                        <th>الرقم</th><th>الاسم</th><th>البريد الإلكتروني</th><th>رقم الهاتف</th>
+                        <th>العنوان</th><th>الحالة</th><th>الإجراءات</th>
+                    </tr></thead>
+                    <tbody>
+        `;
 
-    // البحث
+        subscribers.forEach((subscriber, index) => {
+            const statusClass = subscriber.status === 'active' ? 'status-active' : 'status-inactive';
+            const statusText = subscriber.status === 'active' ? '✅ نشط' : '❌ غير نشط';
+            
+            tableHTML += `<tr>
+                <td>${index + 1}</td>
+                <td>${subscriber.name || '-'}</td>
+                <td>${subscriber.email || '-'}</td>
+                <td>${subscriber.phone || '-'}</td>
+                <td>${subscriber.address || '-'}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>
+                    ${hasPermission(PERMISSIONS.PRINT_SUBSCRIBER_INVOICE) ? `<button class="btn btn-print" onclick="printInvoice('${subscriber.id}')">🖨️</button>` : ''}
+                    ${hasPermission(PERMISSIONS.SEND_SUBSCRIBER_WHATSAPP) ? `<button class="btn btn-whatsapp" onclick="sendWhatsApp('${subscriber.phone}')">💬</button>` : ''}
+                    ${hasPermission(PERMISSIONS.EDIT_SUBSCRIBER) ? `<button class="btn btn-edit" onclick="editSubscriber('${subscriber.id}')">✏️</button>` : ''}
+                    ${hasPermission(PERMISSIONS.DELETE_SUBSCRIBER) ? `<button class="btn btn-delete" onclick="deleteSubscriber('${subscriber.id}')">🗑️</button>` : ''}
+                </td>
+            </tr>`;
+        });
+
+        tableHTML += `</tbody></table></div>`;
+        document.getElementById('tableContent').innerHTML = tableHTML;
+    }
+
+    function hasPermission(permission) {
+        const userData = JSON.parse(localStorage.getItem('currentUser'));
+        if (!userData || !userData.permissions) return false;
+        return userData.permissions.includes(permission);
+    }
+
+    // البحث الحي
     document.getElementById('searchInput').addEventListener('keyup', function(e) {
         const searchTerm = e.target.value.toLowerCase();
-        // سيتم تطبيق البحث هنا
-        console.log('البحث عن:', searchTerm);
+        
+        if (!searchTerm) {
+            renderTable(allSubscribers);
+            return;
+        }
+
+        const filtered = allSubscribers.filter(sub => 
+            (sub.name && sub.name.toLowerCase().includes(searchTerm)) ||
+            (sub.email && sub.email.toLowerCase().includes(searchTerm)) ||
+            (sub.phone && sub.phone.includes(searchTerm))
+        );
+
+        if (filtered.length === 0) {
+            document.getElementById('tableContent').innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center;">
+                    <p style="color: #999;">لم يتم العثور على نتائج</p>
+                </div>
+            `;
+        } else {
+            renderTable(filtered);
+        }
     });
 
-    // العودة للوحة التحكم
-    window.goBack = function() {
-        window.location.href = "dashboard.html";
-    };
+    // الدوال العامة
+    window.goBack = () => window.location.href = "dashboard.html";
 
-    // تسجيل الخروج
-    window.logout = async function() {
+    window.logout = async () => {
         if (confirm('هل تريد تسجيل الخروج؟')) {
             await authService.logout();
             window.location.href = "index.html";
         }
     };
+
+    window.deleteSubscriber = async (id) => {
+        if (!hasPermission(PERMISSIONS.DELETE_SUBSCRIBER)) {
+            showError('ليس لديك صلاحية لحذف المشتركين');
+            return;
+        }
+        if (confirm('هل أنت متأكد من حذف هذا المشترك؟')) {
+            try {
+                await subscriberService.deleteSubscriber(id);
+                showSuccess('تم حذف المشترك بنجاح');
+                loadSubscribers();
+            } catch (error) {
+                showError(`خطأ: ${error.message}`);
+            }
+        }
+    };
+
+    window.printInvoice = (id) => alert(`🖨️ طباعة: ${id}\n(سيتم التطوير)`);
+    window.editSubscriber = (id) => alert(`✏️ تعديل: ${id}\n(سيتم التطوير)`);
+
+    window.sendWhatsApp = (phone) => {
+        if (!phone) {
+            showError('لا يوجد رقم هاتف');
+            return;
+        }
+        window.open(`https://wa.me/${phone.replace(/[^\d]/g, '')}`, '_blank');
+    };
+
+    function showError(msg) {
+        const el = document.getElementById('errorMessage');
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 5000);
+    }
+
+    function showSuccess(msg) {
+        const el = document.getElementById('successMessage');
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 5000);
+    }
+
+    loadSubscribers();
 </script>
 
 </body>
