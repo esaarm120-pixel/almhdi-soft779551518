@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المصروفات</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f5f5f5; }
+        
+        .navbar {
+            background: linear-gradient(135deg, #dc3545 0%, #a02834 100%);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 { font-size: 20px; }
+        .navbar button { padding: 8px 15px; background: white; color: #dc3545; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        
+        .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header h2 { color: #333; margin-bottom: 10px; }
+        
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .controls input, .controls select, .controls button {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .controls button { background: #28a745; color: white; cursor: pointer; border: none; font-weight: bold; }
+        .controls button:hover { background: #1e7e34; }
+        
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
+        .stat-card h3 { color: #666; font-size: 14px; margin-bottom: 10px; }
+        .stat-card .value { font-size: 28px; color: #dc3545; font-weight: bold; }
+        
+        .table-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #dc3545; color: white; padding: 12px; text-align: right; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f9f9f9; }
+        
+        .btn-small { padding: 5px 10px; margin: 0 2px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-edit { background: #28a745; color: white; }
+        .btn-delete { background: #dc3545; color: white; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; margin: 50px auto; position: relative; }
+        .modal-content h3 { margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-buttons button { flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-save { background: #28a745; color: white; }
+        .btn-cancel { background: #6c757d; color: white; }
+        
+        .close { position: absolute; top: 10px; left: 20px; font-size: 28px; cursor: pointer; color: #999; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>💰 إدارة المصروفات</h1>
+    <div>
+        <button onclick="goBack()">📊 العودة</button>
+        <button onclick="logout()">🚪 خروج</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h2>قسم المصروفات والنفقات</h2>
+        <p>إدارة وتتبع جميع مصروفات المشروع</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h3>إجمالي المصروفات</h3>
+            <div class="value" id="totalExpenses">0</div>
+            <small>ريال يمني</small>
+        </div>
+        <div class="stat-card">
+            <h3>عدد المصروفات</h3>
+            <div class="value" id="expenseCount">0</div>
+        </div>
+        <div class="stat-card">
+            <h3>متوسط المصروف</h3>
+            <div class="value" id="avgExpense">0</div>
+            <small>ريال يمني</small>
+        </div>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="🔍 ابحث عن مصروف...">
+        <select id="categoryFilter">
+            <option value="">جميع الفئات</option>
+            <option value="رواتب">🧑‍💼 رواتب</option>
+            <option value="صيانة">🔧 صيانة</option>
+            <option value="كهرباء">⚡ كهرباء</option>
+            <option value="مياه">💧 مياه</option>
+            <option value="أخرى">📌 أخرى</option>
+        </select>
+        <button onclick="openExpenseModal()">➕ إضافة مصروف</button>
+        <button onclick="exportToExcel()" style="background: #007bff;">📥 تصدير</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>الفئة</th>
+                    <th>البيان</th>
+                    <th>المبلغ</th>
+                    <th>المسؤول</th>
+                    <th>ملاحظات</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="expensesTable">
+                <tr><td colspan="7" style="text-align: center; color: #999;">جاري تحميل البيانات...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal إضافة مصروف -->
+<div class="modal" id="expenseModal">
+    <div class="modal-content">
+        <span class="close" onclick="closeExpenseModal()">&times;</span>
+        <h3>➕ إضافة مصروف جديد</h3>
+        <div class="form-group">
+            <label>التاريخ:</label>
+            <input type="date" id="expenseDate">
+        </div>
+        <div class="form-group">
+            <label>الفئة:</label>
+            <select id="expenseCategory">
+                <option value="رواتب">🧑‍💼 رواتب</option>
+                <option value="صيانة">🔧 صيانة</option>
+                <option value="كهرباء">⚡ كهرباء</option>
+                <option value="مياه">💧 مياه</option>
+                <option value="أخرى">📌 أخرى</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>البيان:</label>
+            <input type="text" id="expenseDescription" placeholder="وصف المصروف">
+        </div>
+        <div class="form-group">
+            <label>المبلغ (ريال):</label>
+            <input type="number" id="expenseAmount" placeholder="0" step="0.01">
+        </div>
+        <div class="form-group">
+            <label>المسؤول:</label>
+            <input type="text" id="expenseResponsible" placeholder="اسم المسؤول">
+        </div>
+        <div class="form-group">
+            <label>ملاحظات:</label>
+            <input type="text" id="expenseNotes" placeholder="ملاحظات إضافية">
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-save" onclick="saveExpense()">💾 حفظ</button>
+            <button class="btn-cancel" onclick="closeExpenseModal()">❌ إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { authService } from "./js/auth-service.js";
+    import { expenseService } from "./js/expense-service.js";
+    import { accountingService } from "./js/accounting-service.js";
+    import { storageService } from "./js/storage-service.js";
+
+    // التحقق من المستخدم
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) {
+        window.location.href = "index.html";
+    }
+
+    // تحميل المصروفات
+    async function loadExpenses() {
+        try {
+            const expenses = await expenseService.getAllExpenses();
+            displayExpenses(expenses);
+            updateStats(expenses);
+        } catch (error) {
+            console.error('خطأ في تحميل المصروفات:', error);
+        }
+    }
+
+    function displayExpenses(expenses) {
+        const table = document.getElementById('expensesTable');
+        if (expenses.length === 0) {
+            table.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">لا توجد مصروفات</td></tr>';
+            return;
+        }
+
+        table.innerHTML = expenses.map(exp => `
+            <tr>
+                <td>${new Date(exp.date).toLocaleDateString('ar-EG')}</td>
+                <td>${exp.category}</td>
+                <td>${exp.description}</td>
+                <td><strong>${exp.amount}</strong></td>
+                <td>${exp.responsible}</td>
+                <td>${exp.notes || '-'}</td>
+                <td>
+                    <button class="btn-small btn-edit" onclick="editExpense('${exp.id}')">✏️</button>
+                    <button class="btn-small btn-delete" onclick="deleteExpense('${exp.id}')">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function updateStats(expenses) {
+        const total = expenseService.accountingService?.calculateTotalExpenses?.(expenses) || 
+                     expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+        const count = expenses.length;
+        const avg = count > 0 ? (total / count).toFixed(2) : 0;
+
+        document.getElementById('totalExpenses').textContent = total.toLocaleString('ar-EG');
+        document.getElementById('expenseCount').textContent = count;
+        document.getElementById('avgExpense').textContent = avg;
+    }
+
+    // فتح/إغلاق Modal
+    window.openExpenseModal = () => {
+        document.getElementById('expenseDate').valueAsDate = new Date();
+        document.getElementById('expenseModal').style.display = 'block';
+    };
+
+    window.closeExpenseModal = () => {
+        document.getElementById('expenseModal').style.display = 'none';
+    };
+
+    // حفظ مصروف
+    window.saveExpense = async () => {
+        const expense = {
+            date: document.getElementById('expenseDate').value,
+            category: document.getElementById('expenseCategory').value,
+            description: document.getElementById('expenseDescription').value,
+            amount: parseFloat(document.getElementById('expenseAmount').value),
+            responsible: document.getElementById('expenseResponsible').value,
+            notes: document.getElementById('expenseNotes').value
+        };
+
+        if (!expense.amount || expense.amount <= 0) {
+            alert('❌ يرجى إدخال مبلغ صحيح');
+            return;
+        }
+
+        try {
+            await expenseService.addExpense(expense);
+            alert('✅ تم حفظ المصروف بنجاح');
+            closeExpenseModal();
+            loadExpenses();
+        } catch (error) {
+            alert('❌ خطأ في حفظ المصروف: ' + error.message);
+        }
+    };
+
+    // حذف مصروف
+    window.deleteExpense = async (id) => {
+        if (confirm('هل تريد حذف هذا المصروف؟')) {
+            try {
+                await expenseService.deleteExpense(id);
+                alert('✅ تم حذف المصروف');
+                loadExpenses();
+            } catch (error) {
+                alert('❌ خطأ: ' + error.message);
+            }
+        }
+    };
+
+    // العودة والخروج
+    window.goBack = () => window.location.href = "dashboard.html";
+    window.logout = async () => {
+        if (confirm('هل تريد تسجيل الخروج؟')) {
+            await authService.logout();
+            window.location.href = "index.html";
+        }
+    };
+
+    window.exportToExcel = () => {
+        alert('📥 ميزة التصدير قيد التطوير');
+    };
+
+    // تحميل البيانات
+    loadExpenses();
+</script>
+
+</body>
+</html>
