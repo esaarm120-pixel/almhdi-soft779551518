@@ -1,8 +1,8 @@
 // ============================================
-// Authentication Service - Version 10.8.0 (Unified)
+// Authentication Service - Version 10.8.0 (Updated)
 // ============================================
 
-import { auth, db, errorMessages } from "../config/firebase-config.js";
+import { auth, db } from "../config/firebase-config.js";
 import { 
     signInWithEmailAndPassword, 
     signOut, 
@@ -21,7 +21,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 export const authService = {
-    // 🔐 تسجيل الدخول
+    // 🔐 تسجيل الدخول (محدث)
     login: async (email, password) => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -33,6 +33,9 @@ export const authService = {
                 role: 'user',
                 permissions: []
             };
+            
+            // حفظ البيانات محلياً ليستخدمها التطبيق في التوجيه
+            authService.saveUserToLocalStorage(user, userData);
             
             console.log('✅ تسجيل دخول ناجح:', user.email);
             return { user, userData };
@@ -65,21 +68,17 @@ export const authService = {
         }
     },
 
-    // 💾 حفظ بيانات المستخدم في LocalStorage مع الصلاحيات
+    // 💾 حفظ بيانات المستخدم
     saveUserToLocalStorage: (user, userData) => {
         try {
             const userInfo = {
                 uid: user.uid,
                 email: user.email,
-                displayName: userData.displayName || user.email.split('@')[0],
                 role: userData.role || 'user',
-                permissions: userData.permissions || [],
-                projectId: userData.projectId || null,
-                phone: userData.phone || '',
-                createdAt: userData.createdAt || new Date().toISOString()
+                displayName: userData.displayName || user.email.split('@')[0],
+                // إضافة بيانات إضافية عند الحاجة
             };
             localStorage.setItem('currentUser', JSON.stringify(userInfo));
-            console.log('✅ تم حفظ بيانات المستخدم:', userInfo.email);
             return userInfo;
         } catch (error) {
             console.error('❌ خطأ في حفظ بيانات المستخدم:', error);
@@ -101,38 +100,25 @@ export const authService = {
 };
 
 // ============================================
-// User Management Service
+// User Management Service (كما هي)
 // ============================================
 
 export const userManagementService = {
-    // ➕ إنشاء مستخدم جديد
     createUser: async (email, password, displayName, role = 'user') => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            
-            // تحديث الملف الشخصي
             await updateProfile(user, { displayName });
-            
-            // حفظ بيانات إضافية في Firestore
             await setDoc(doc(db, 'users', user.uid), {
-                email,
-                displayName,
-                role,
-                permissions: [],
-                createdAt: new Date().toISOString(),
-                status: 'active'
+                email, displayName, role, permissions: [],
+                createdAt: new Date().toISOString(), status: 'active'
             });
-            
-            console.log('✅ تم إنشاء مستخدم جديد:', email);
             return user;
         } catch (error) {
-            console.error('❌ خطأ في إنشاء مستخدم:', error.code);
             throw error;
         }
     },
 
-    // 📋 الحصول على جميع المستخدمين
     getAllUsers: async () => {
         try {
             const q = query(collection(db, 'users'), where('status', '==', 'active'));
@@ -141,10 +127,8 @@ export const userManagementService = {
             querySnapshot.forEach((doc) => {
                 users.push({ id: doc.id, ...doc.data() });
             });
-            console.log(`✅ تم جلب ${users.length} مستخدم`);
             return users;
         } catch (error) {
-            console.error('❌ خطأ في جلب المستخدمين:', error);
             return [];
         }
     }
