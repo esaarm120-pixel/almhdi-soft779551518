@@ -1,14 +1,11 @@
-// ============================================
-// Firebase Configuration - Version 10.8.0 (Unified)
-// ============================================
-// تم توحيد إصدار Firebase ليكون متوافقاً مع جميع الملفات
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
-// ✅ بيانات Firebase الحقيقية
+// ============================================
+// Firebase Configuration - Clean Version
+// ============================================
+
 const firebaseConfig = {
   apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
   authDomain: "almhdi-soft779551518.firebaseapp.com",
@@ -19,28 +16,43 @@ const firebaseConfig = {
   measurementId: "G-MZSN60VZ63"
 };
 
-// ✅ تهيئة Firebase
-const app = initializeApp(firebaseConfig);
+// ============================================
+// Initialize Firebase
+// ============================================
 
-// ✅ تصدير الخدمات الأساسية
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const analytics = getAnalytics(app);
+let app;
+let auth;
+let db;
 
-// ✅ رسائل الأخطاء العربية
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+
+  console.log("✅ Firebase جاهز:", firebaseConfig.projectId);
+
+} catch (error) {
+  console.error("❌ Firebase initialization error:", error);
+}
+
+// ============================================
+// Export services
+// ============================================
+
+export { auth, db };
+
+// ============================================
+// Error Messages (Arabic)
+// ============================================
+
 export const errorMessages = {
   "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
-  "auth/user-not-found": "المستخدم غير موجود في النظام.",
+  "auth/user-not-found": "المستخدم غير موجود.",
   "auth/wrong-password": "كلمة المرور خاطئة.",
-  "auth/invalid-credential": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
-  "auth/user-disabled": "هذا الحساب معطل من قبل المسؤول.",
-  "auth/email-already-in-use": "البريد الإلكتروني مستخدم بالفعل.",
-  "auth/weak-password": "كلمة المرور ضعيفة جداً (7 أحرف على الأقل).",
-  "auth/operation-not-allowed": "هذه العملية غير مسموحة حالياً.",
-  "auth/too-many-requests": "تم حظر المحاولات مؤقتاً، حاول لاحقاً.",
-  "auth/network-request-failed": "فشل الاتصال بالشبكة، تأكد من اتصال الإنترنت.",
-  "auth/account-exists-with-different-credential": "البريد الإلكتروني مسجل بطريقة تسجيل دخول مختلفة."
+  "auth/invalid-credential": "بيانات الدخول غير صحيحة.",
+  "auth/user-disabled": "الحساب معطل.",
+  "auth/email-already-in-use": "البريد مستخدم مسبقاً.",
+  "auth/weak-password": "كلمة المرور ضعيفة (6 أحرف على الأقل).",
+  "auth/too-many-requests": "محاولات كثيرة، حاول لاحقاً.",
+  "auth/network-request-failed": "مشكلة اتصال بالإنترنت."
 };
-
-// ✅ قيمة اختبار للتحقق من أن الملف يعمل
-console.log('✅ Firebase Config تم تحميله بنجاح - المشروع:', firebaseConfig.projectId);
