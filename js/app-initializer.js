@@ -4,22 +4,44 @@ import { db } from "../config/firebase-config.js";
 
 export async function initializeApp() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
-    if (!user || !user.projectId) {
-        console.warn("لا يوجد مشروع مرتبط بهذا المستخدم");
+    
+    // التحقق من وجود المستخدم
+    if (!user || !user.uid) {
+        console.warn("المستخدم غير مسجل دخوله");
         return;
     }
 
     try {
+        // 1. جلب بيانات المستخدم من مجموعة 'users' للتحقق من صلاحياته
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+
+            // 2. تفعيل صلاحية السوبر أدمن (تجاوز قيود المشاريع)
+            if (userData.role === 'super_admin') {
+                console.log("أهلاً بك يا عصام المهدي، تم تفعيل وضع السوبر أدمن.");
+                return; // خروج من الدالة لأنك تملك صلاحية كاملة
+            }
+        }
+
+        // 3. كود التحقق من المشاريع للمستخدمين العاديين
+        if (!user.projectId) {
+            console.warn("لا يوجد مشروع مرتبط بهذا المستخدم");
+            return;
+        }
+
         const projectDoc = await getDoc(doc(db, "projects", user.projectId));
         if (projectDoc.exists()) {
             const projectData = projectDoc.data();
-            // نظام الإيقاف (Kill Switch)
+            
+            // نظام الإيقاف (Kill Switch) للمشاريع
             if (projectData.status === 'suspended') {
                 showSuspensionModal(projectData);
             }
         }
     } catch (error) {
-        console.error("خطأ في التحقق من حالة المشروع:", error);
+        console.error("خطأ في التحقق من حالة الصلاحيات:", error);
     }
 }
 
