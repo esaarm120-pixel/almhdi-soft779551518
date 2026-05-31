@@ -3,25 +3,119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
+<title>لوحة التحكم</title>
 
 <style>
+
+:root{
+--main:#00e676;
+--bg:#121212;
+--card:#1e1e1e;
+--border:#333;
+}
 
 body{
 margin:0;
 padding:20px;
-background:#121212;
+background:var(--bg);
 color:white;
 font-family:Arial;
 }
 
-/* ===== SIGNATURE ONLY ===== */
+/* ===== HEADER ===== */
+.header{
+background:var(--card);
+padding:15px;
+border-radius:15px;
+border:1px solid var(--border);
+margin-bottom:15px;
+}
+
+.header-top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.project-name{
+font-size:18px;
+font-weight:bold;
+color:var(--main);
+}
+
+.header-info{
+font-size:13px;
+color:#aaa;
+margin-top:10px;
+line-height:1.7;
+}
+
+.header-info span{
+color:white;
+font-weight:bold;
+}
+
+/* ===== DASHBOARD ===== */
+.dashboard{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:12px;
+margin-top:10px;
+}
+
+.card{
+background:var(--card);
+padding:15px;
+border-radius:12px;
+border:1px solid var(--border);
+text-align:center;
+}
+
+.card h4{
+margin:0;
+font-size:12px;
+color:#aaa;
+}
+
+.card span{
+display:block;
+margin-top:8px;
+font-size:20px;
+font-weight:bold;
+color:var(--main);
+}
+
+/* ===== BUTTONS ===== */
+.section{
+background:var(--card);
+padding:15px;
+border-radius:12px;
+margin-top:15px;
+border:1px solid var(--border);
+}
+
+.btn{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:10px;
+border:1px solid var(--border);
+background:transparent;
+color:white;
+cursor:pointer;
+}
+
+.btn:hover{
+border-color:var(--main);
+}
+
+/* ===== SIGNATURE ===== */
 .signature{
 margin-top:15px;
-background:#1e1e1e;
+background:var(--card);
 padding:10px;
 border-radius:12px;
-border:1px solid #333;
+border:1px solid var(--border);
 overflow:hidden;
 white-space:nowrap;
 direction:rtl;
@@ -31,29 +125,72 @@ direction:rtl;
 display:inline-block;
 white-space:nowrap;
 padding-right:100%;
-animation:moveRTL 15s linear infinite;
+animation:moveRTL 14s linear infinite;
 font-weight:bold;
 }
 
 /* حركة من اليمين لليسار */
 @keyframes moveRTL{
-0%{
-transform:translateX(100%);
-}
-100%{
-transform:translateX(-100%);
-}
-}
-
-/* تأثير ناعم */
-#signature{
-transition:0.5s;
+0%{transform:translateX(100%);}
+100%{transform:translateX(-100%);}
 }
 
 </style>
 </head>
 
 <body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+
+<div class="header-top">
+<div class="project-name" id="projectName">جارٍ التحميل...</div>
+<div onclick="location.href='settings.html'" style="cursor:pointer;font-size:22px;">⚙️</div>
+</div>
+
+<div class="header-info">
+<div>🏘️ القرية: <span id="villageName">---</span></div>
+<div>👤 المدير: <span id="managerName">---</span></div>
+<div>🏢 المديرية: <span id="districtName">---</span></div>
+<div>🌍 المحافظة: <span id="governorateName">---</span></div>
+</div>
+
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="dashboard">
+
+<div class="card">
+<h4>👥 المشتركين</h4>
+<span id="subsCount">0</span>
+</div>
+
+<div class="card">
+<h4>🧾 الفواتير</h4>
+<span id="pendingBills">0</span>
+</div>
+
+<div class="card">
+<h4>💰 الصندوق</h4>
+<span id="cashBalance">0</span>
+</div>
+
+<div class="card">
+<h4>📊 اليوم</h4>
+<span id="todayIncome">0</span>
+</div>
+
+</div>
+
+<!-- ===== ACTIONS ===== -->
+<div class="section">
+
+<button class="btn" onclick="location.href='subscribers.html'">👥 المشتركين</button>
+<button class="btn" onclick="location.href='readings.html'">💧 القراءات</button>
+<button class="btn" onclick="location.href='expenses.html'">📉 المصروفات</button>
+<button class="btn" onclick="location.href='receipts.html'">💵 التقارير</button>
+
+</div>
 
 <!-- ===== SIGNATURE ===== -->
 <div class="signature" id="signature">
@@ -63,26 +200,68 @@ transition:0.5s;
 </div>
 </div>
 
-<script>
+<!-- ===== FIREBASE ===== -->
+<script type="module">
 
-/* ألوان متغيرة */
-const colors = [
-"#00e676",
-"#00bcd4",
-"#ffeb3b",
-"#ff5252",
-"#ab47bc",
-"#42a5f5"
-];
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-let i = 0;
+const firebaseConfig = {
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_PROJECT.firebaseapp.com",
+databaseURL: "YOUR_DB_URL",
+projectId: "YOUR_PROJECT",
+storageBucket: "YOUR_PROJECT.appspot.com",
+messagingSenderId: "XXX",
+appId: "XXX"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ===== SETTINGS ===== */
+onValue(ref(db,'settings/projectName'),s=>{
+projectName.innerText = s.val() || "مشروع مياه";
+});
+
+onValue(ref(db,'settings/village'),s=>{
+villageName.innerText = s.val() || "---";
+});
+
+onValue(ref(db,'settings/manager'),s=>{
+managerName.innerText = s.val() || "---";
+});
+
+onValue(ref(db,'settings/district'),s=>{
+districtName.innerText = s.val() || "---";
+});
+
+onValue(ref(db,'settings/governorate'),s=>{
+governorateName.innerText = s.val() || "---";
+});
+
+/* ===== STATS ===== */
+onValue(ref(db,'stats/subscribers'),s=>{
+subsCount.innerText = s.val() || 0;
+});
+
+onValue(ref(db,'stats/pendingBills'),s=>{
+pendingBills.innerText = s.val() || 0;
+});
+
+onValue(ref(db,'stats/todayIncome'),s=>{
+todayIncome.innerText = s.val() || 0;
+});
+
+/* ===== THEME COLOR ===== */
+onValue(ref(db,'settings/themeColor'),s=>{
+document.documentElement.style.setProperty('--main', s.val() || '#00e676');
+});
+
+/* ===== SIGNATURE COLOR CHANGE ===== */
+const colors=["#00e676","#00bcd4","#ffeb3b","#ff5252","#ab47bc","#42a5f5"];
+let i=0;
 
 setInterval(()=>{
 document.getElementById("signature").style.color = colors[i];
-i = (i + 1) % colors.length;
-},2000);
-
-</script>
-
-</body>
-</html>
+i=(i+ 
