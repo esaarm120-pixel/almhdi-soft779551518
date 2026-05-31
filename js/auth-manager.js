@@ -1,29 +1,63 @@
-// js/auth-manager.js
+// js/auth-manager.js (NEW CLEAN VERSION)
 
-export function protectPage() {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    
-    // المعرف الثاني الخاص بك
-    const SUPER_ADMIN_UID = "YtP6bjTz6HrwJbVhJNJH"; 
+import { auth } from "../config/firebase-config.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from "../config/firebase-config.js";
 
-    // 1. إذا لم يكن هناك مستخدم، ارسله لصفحة الدخول
-    if (!user) {
-        window.location.href = 'index.html';
-        return;
-    }
 
-    // 2. التحقق من الصلاحية (إما بالدور المحفوظ أو بالمعرف الخاص بك)
-    if (user.role === 'super_admin' || user.uid === SUPER_ADMIN_UID) {
-        console.log("تم تفعيل وضع السوبر أدمن");
-        return; // أنت السوبر أدمن، استمر!
-    }
+// ============================================
+// 🔐 حماية الصفحات حسب الدور
+// ============================================
+export function protectPage(allowedRoles = []) {
 
-    // 3. إذا لم تكن سوبر أدمن، امنعه
-    alert("❌ ليس لديك صلاحية للوصول لهذه الصفحة!");
-    window.location.href = 'dashboard.html';
+    onAuthStateChanged(auth, async (user) => {
+
+        // ❌ إذا ما فيه مستخدم
+        if (!user) {
+            window.location.href = "index.html";
+            return;
+        }
+
+        try {
+            // 🔥 جلب بيانات المستخدم من Firestore
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+
+            if (!userSnap.exists()) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const userData = userSnap.data();
+
+            // 🔒 التحقق من الدور
+            if (
+                allowedRoles.length > 0 &&
+                !allowedRoles.includes(userData.role)
+            ) {
+                alert("❌ ليس لديك صلاحية للوصول لهذه الصفحة");
+                window.location.href = "dashboard.html";
+                return;
+            }
+
+            console.log("✅ Access granted:", userData.role);
+
+        } catch (error) {
+            console.error("Protect Page Error:", error);
+            window.location.href = "index.html";
+        }
+    });
 }
 
+
+// ============================================
+// 🚪 تسجيل الخروج
+// ============================================
 export async function logoutUser() {
-    localStorage.removeItem('currentUser');
-    window.location.href = 'index.html';
+    try {
+        await signOut(auth);
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Logout Error:", error);
+    }
 }
