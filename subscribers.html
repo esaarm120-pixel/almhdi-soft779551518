@@ -1,31 +1,59 @@
 import { db } from "../config/firebase-config.js";
-import { collection, getDocs, query, where, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+    collection, 
+    getDocs, 
+    query, 
+    where, 
+    doc, 
+    getDoc, 
+    deleteDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 export const subscriberService = {
-    // Function to get all subscribers with super_admin support
+
     getAllSubscribers: async () => {
         const user = JSON.parse(localStorage.getItem('currentUser'));
-        if (!user || !user.uid) throw new Error("يرجى تسجيل الدخول أولاً");
 
-        // Fetch user document from Firestore to verify role
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        const userData = userDoc.data();
-
-        let q;
-        // If user is super_admin, fetch all subscribers
-        if (userData && userData.role === 'super_admin') {
-            q = collection(db, "subscribers");
-        } else {
-            // Otherwise, fetch subscribers for the user's specific project
-            q = query(collection(db, "subscribers"), where("projectId", "==", user.projectId));
+        if (!user?.uid) {
+            throw new Error("يرجى تسجيل الدخول أولاً");
         }
 
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+            throw new Error("المستخدم غير موجود في قاعدة البيانات");
+        }
+
+        const userData = userSnap.data();
+
+        let q;
+
+        const role = (userData.role || "").toLowerCase();
+
+        if (role === "super_admin") {
+            q = collection(db, "subscribers");
+        } else {
+            if (!user.projectId) {
+                throw new Error("projectId غير موجود في المستخدم");
+            }
+
+            q = query(
+                collection(db, "subscribers"),
+                where("projectId", "==", user.projectId)
+            );
+        }
+
+        const snapshot = await getDocs(q);
+
+        return snapshot.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+        }));
     },
 
-    // Function to delete a subscriber
     deleteSubscriber: async (id) => {
+        if (!id) throw new Error("ID غير موجود");
         return await deleteDoc(doc(db, "subscribers", id));
     }
 };
