@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>سند قبض</title>
+
+<style>
+body{font-family:Arial;background:#121212;color:white;padding:20px}
+input,select{
+width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #333;background:#1e1e1e;color:white;
+}
+button{
+width:100%;padding:12px;background:#00e676;border:none;border-radius:10px;font-weight:bold;
+}
+.box{
+background:#1e1e1e;padding:15px;border-radius:12px;margin-bottom:10px
+}
+</style>
+</head>
+
+<body>
+
+<h2>🧾 سند قبض</h2>
+
+<div class="box">
+
+<input id="customer" placeholder="اسم المشترك">
+
+<input id="amount" type="number" placeholder="المبلغ">
+
+<input id="note" placeholder="ملاحظة">
+
+<select id="type">
+<option value="cash">صندوق نقد</option>
+<option value="transfer">تحويل</option>
+<option value="mixed">مختلط</option>
+</select>
+
+<input id="cashPart" type="number" placeholder="جزء نقد (إذا مختلط)">
+<input id="transferPart" type="number" placeholder="جزء تحويل (إذا مختلط)">
+
+<button onclick="saveReceipt()">حفظ سند القبض</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getDatabase, ref, push, set, get, update } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+const firebaseConfig = {
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_PROJECT.firebaseapp.com",
+databaseURL: "YOUR_DB_URL",
+projectId: "YOUR_PROJECT"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.saveReceipt = async function(){
+
+let customer = customer.value;
+let amount = Number(amount.value);
+let note = note.value;
+let type = type.value;
+
+let cash = 0;
+let transfer = 0;
+
+if(type === "cash") cash = amount;
+if(type === "transfer") transfer = amount;
+if(type === "mixed"){
+cash = Number(cashPart.value || 0);
+transfer = Number(transferPart.value || 0);
+}
+
+let newTx = push(ref(db,"transactions"));
+
+await set(newTx,{
+type:"income",
+customer,
+amount,
+cash,
+transfer,
+note,
+date:Date.now()
+});
+
+/* تحديث الصناديق */
+const cashRef = ref(db,"cashBox");
+const transferRef = ref(db,"transferBox");
+
+let cashSnap = await get(cashRef);
+let transferSnap = await get(transferRef);
+
+await update(ref(db),{
+cashBox:(cashSnap.val()||0)+cash,
+transferBox:(transferSnap.val()||0)+transfer
+});
+
+alert("تم حفظ سند القبض");
+}
+
+</script>
+
+</body>
+</html>
