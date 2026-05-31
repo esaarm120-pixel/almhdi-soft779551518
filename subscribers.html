@@ -1,220 +1,31 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إدارة المشتركين</title>
+import { db } from "../config/firebase-config.js";
+import { collection, getDocs, query, where, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-<style>
-body{
-margin:0;
-font-family:Arial;
-background:#121212;
-color:white;
-}
+export const subscriberService = {
+    // جلب المشتركين مع دعم صلاحية السوبر أدمن
+    getAllSubscribers: async () => {
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        if (!user || !user.uid) throw new Error("غير مسجل");
 
-/* ===== NAVBAR ===== */
-.navbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:15px;
-background:#1e1e1e;
-border-bottom:1px solid #333;
-}
+        // جلب بيانات المستخدم للتأكد من الرتبة
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const userData = userDoc.data();
 
-.navbar h1{
-font-size:18px;
-color:#00e676;
-margin:0;
-}
+        let q;
+        // إذا كنت السوبر أدمن، اجلب كل المشتركين من كل مكان
+        if (userData && userData.role === 'super_admin') {
+            q = collection(db, "subscribers");
+        } else {
+            // إذا كنت مستخدماً عادياً، اجلب مشتركي مشروعك فقط
+            q = query(collection(db, "subscribers"), where("projectId", "==", user.projectId));
+        }
 
-button{
-padding:8px 12px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-background:#00e676;
-color:black;
-font-weight:bold;
-}
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
 
-/* ===== CONTAINER ===== */
-.container{
-padding:15px;
-}
-
-.header{
-background:#1e1e1e;
-padding:12px;
-border-radius:10px;
-margin-bottom:10px;
-border:1px solid #333;
-}
-
-.header h2{
-margin:0;
-font-size:16px;
-}
-
-.header p{
-margin:5px 0 0;
-color:#aaa;
-}
-
-/* ===== TABLE ===== */
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-background:#1e1e1e;
-border-radius:10px;
-overflow:hidden;
-}
-
-th, td{
-padding:10px;
-text-align:center;
-border-bottom:1px solid #333;
-}
-
-th{
-background:#111;
-color:#00e676;
-}
-
-tr:hover{
-background:#222;
-}
-
-/* ===== DELETE ===== */
-.delete{
-background:red;
-color:white;
-padding:5px 10px;
-border-radius:6px;
-border:none;
-cursor:pointer;
-}
-
-.loading{
-text-align:center;
-color:#aaa;
-padding:20px;
-}
-</style>
-</head>
-
-<body>
-
-<!-- ===== NAVBAR ===== -->
-<div class="navbar">
-<h1>👥 إدارة المشتركين</h1>
-<div>
-<button onclick="location.href='dashboard.html'">📊 الرئيسية</button>
-<button id="logoutBtn" style="background:red;color:white;">🚪 خروج</button>
-</div>
-</div>
-
-<!-- ===== CONTENT ===== -->
-<div class="container">
-
-<div class="header">
-<h2>قائمة المشتركين</h2>
-<p>إجمالي المشتركين: <strong id="totalCount">0</strong></p>
-</div>
-
-<div id="tableContent" class="loading">
-جاري تحميل البيانات...
-</div>
-
-</div>
-
-<!-- ===== SCRIPT ===== -->
-<script type="module">
-
-import { protectPage, logoutUser } from "./js/auth-manager.js";
-import { subscriberService } from "./js/subscriber-service.js";
-
-/* ===== حماية الصفحة ===== */
-protectPage();
-
-/* ===== تسجيل خروج ===== */
-document.getElementById("logoutBtn").addEventListener("click", logoutUser);
-
-/* ===== حذف مشترك ===== */
-window.deleteSub = async function(id){
-if(!confirm("هل تريد حذف المشترك؟")) return;
-
-try{
-await subscriberService.deleteSubscriber(id);
-loadSubscribers();
-}catch(e){
-alert("خطأ في الحذف");
-console.log(e);
-}
-}
-
-/* ===== عرض الجدول ===== */
-function renderTable(subscribers){
-
-const container = document.getElementById("tableContent");
-
-if(!subscribers.length){
-container.innerHTML = "<div class='loading'>لا يوجد مشتركين</div>";
-return;
-}
-
-let html = `
-<table>
-<tr>
-<th>الاسم</th>
-<th>الهاتف</th>
-<th>إجراء</th>
-</tr>
-`;
-
-subscribers.forEach(sub=>{
-html += `
-<tr>
-<td>${sub.name}</td>
-<td>${sub.phone || "-"}</td>
-<td><button class="delete" onclick="deleteSub('${sub.id}')">حذف</button></td>
-</tr>
-`;
-});
-
-html += "</table>";
-
-container.innerHTML = html;
-}
-
-/* ===== تحميل المشتركين ===== */
-async function loadSubscribers(){
-try{
-
-const subscribers = await subscriberService.getAllSubscribers();
-
-document.getElementById("totalCount").textContent = subscribers.length;
-
-// توحيد ID
-const formatted = subscribers.map(s=>({
-...s,
-id: s.id || s.key || s.uid
-}));
-
-renderTable(formatted);
-
-}catch(error){
-console.log("Error:",error);
-document.getElementById("tableContent").innerHTML =
-"<div class='loading'>خطأ في تحميل البيانات</div>";
-}
-}
-
-loadSubscribers();
-
-</script>
-
-</body>
-</html>
+    // حذف مشترك
+    deleteSubscriber: async (id) => {
+        return await deleteDoc(doc(db, "subscribers", id));
+    }
+};
