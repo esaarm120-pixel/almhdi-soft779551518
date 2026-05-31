@@ -28,7 +28,7 @@ background:var(--card);
 padding:15px;
 border-radius:15px;
 border:1px solid var(--border);
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
 .header-top{
@@ -53,6 +53,31 @@ line-height:1.7;
 .header-info span{
 color:white;
 font-weight:bold;
+}
+
+/* ===== SIGNATURE (بين الترويسة والواجهة) ===== */
+.signature{
+margin:10px 0;
+background:var(--card);
+padding:10px;
+border-radius:12px;
+border:1px solid var(--border);
+overflow:hidden;
+white-space:nowrap;
+}
+
+.marquee{
+display:inline-block;
+white-space:nowrap;
+padding-right:100%;
+animation:moveRTL 14s linear infinite;
+font-weight:bold;
+color:var(--main);
+}
+
+@keyframes moveRTL{
+0%{transform:translateX(100%);}
+100%{transform:translateX(-100%);}
 }
 
 /* ===== DASHBOARD ===== */
@@ -109,32 +134,6 @@ cursor:pointer;
 border-color:var(--main);
 }
 
-/* ===== SIGNATURE ===== */
-.signature{
-margin-top:15px;
-background:var(--card);
-padding:10px;
-border-radius:12px;
-border:1px solid var(--border);
-overflow:hidden;
-white-space:nowrap;
-direction:rtl;
-}
-
-.marquee{
-display:inline-block;
-white-space:nowrap;
-padding-right:100%;
-animation:moveRTL 14s linear infinite;
-font-weight:bold;
-}
-
-/* حركة من اليمين لليسار */
-@keyframes moveRTL{
-0%{transform:translateX(100%);}
-100%{transform:translateX(-100%);}
-}
-
 </style>
 </head>
 
@@ -157,6 +156,14 @@ font-weight:bold;
 
 </div>
 
+<!-- ===== SIGNATURE (بين الهيدر والواجهة) ===== -->
+<div class="signature" id="signature">
+<div class="marquee">
+✨ برمجة وتطوير : عصام المهدي | 779551518 ✨ &nbsp;&nbsp; ✦ &nbsp;&nbsp;
+لا تنسَ ذكر الله والصلاة على النبي ﷺ
+</div>
+</div>
+
 <!-- ===== DASHBOARD ===== -->
 <div class="dashboard">
 
@@ -171,13 +178,13 @@ font-weight:bold;
 </div>
 
 <div class="card">
-<h4>💰 الصندوق</h4>
+<h4>💰 الصندوق (نقد)</h4>
 <span id="cashBalance">0</span>
 </div>
 
 <div class="card">
-<h4>📊 اليوم</h4>
-<span id="todayIncome">0</span>
+<h4>🏦 التحويل</h4>
+<span id="transferBalance">0</span>
 </div>
 
 </div>
@@ -188,16 +195,8 @@ font-weight:bold;
 <button class="btn" onclick="location.href='subscribers.html'">👥 المشتركين</button>
 <button class="btn" onclick="location.href='readings.html'">💧 القراءات</button>
 <button class="btn" onclick="location.href='expenses.html'">📉 المصروفات</button>
-<button class="btn" onclick="location.href='receipts.html'">💵 التقارير</button>
+<button class="btn" onclick="location.href='receipt.html'">🧾 سند قبض</button>
 
-</div>
-
-<!-- ===== SIGNATURE ===== -->
-<div class="signature" id="signature">
-<div class="marquee">
-✨ برمجة وتطوير : عصام المهدي | 779551518 ✨ &nbsp;&nbsp; ✦ &nbsp;&nbsp;
-لا تنسَ ذكر الله والصلاة على النبي ﷺ
-</div>
 </div>
 
 <!-- ===== FIREBASE ===== -->
@@ -249,19 +248,31 @@ onValue(ref(db,'stats/pendingBills'),s=>{
 pendingBills.innerText = s.val() || 0;
 });
 
-onValue(ref(db,'stats/todayIncome'),s=>{
-todayIncome.innerText = s.val() || 0;
+/* ===== CASH BOX ===== */
+onValue(ref(db,'cashBox'),s=>{
+cashBalance.innerText = s.val() || 0;
 });
 
-/* ===== THEME COLOR ===== */
+/* ===== TRANSFER BOX ===== */
+onValue(ref(db,'transferBox'),s=>{
+transferBalance.innerText = s.val() || 0;
+});
+
+/* ===== THEME ===== */
 onValue(ref(db,'settings/themeColor'),s=>{
 document.documentElement.style.setProperty('--main', s.val() || '#00e676');
 });
 
-/* ===== SIGNATURE COLOR CHANGE ===== */
+/* ===== SIGNATURE ANIMATION ===== */
 const colors=["#00e676","#00bcd4","#ffeb3b","#ff5252","#ab47bc","#42a5f5"];
 let i=0;
 
 setInterval(()=>{
 document.getElementById("signature").style.color = colors[i];
-i=(i+ 
+i = (i + 1) % colors.length;
+},2000);
+
+</script>
+
+</body>
+</html>
