@@ -1,49 +1,94 @@
 import { auth, db } from "../config/firebase-config.js";
-import {
-    signInWithEmailAndPassword,
-    signOut,
+import { 
+    signInWithEmailAndPassword, 
+    signOut, 
     onAuthStateChanged,
     createUserWithEmailAndPassword,
-    updateProfile
+    updateProfile 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-import {
-    doc,
-    setDoc,
-    getDoc,
-    collection,
-    query,
-    where,
-    getDocs
+import { 
+    doc, 
+    setDoc, 
+    getDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+
+// ============================================
+// 🔐 تسجيل الدخول (FIXED - بسيط وموثوق)
+// ============================================
 export const authService = {
 
-    // 🔐 تسجيل الدخول (مصدر واحد Firestore)
     login: async (email, password) => {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        try {
 
-        const userSnap = await getDoc(doc(db, "users", user.uid));
+            // 1. تسجيل الدخول من Firebase Auth
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
 
-        if (!userSnap.exists()) {
-            throw new Error("المستخدم غير موجود في Firestore");
+            // 2. جلب بيانات المستخدم من Firestore
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+
+            if (!userSnap.exists()) {
+                alert("المستخدم غير موجود في قاعدة البيانات");
+                return;
+            }
+
+            const userData = userSnap.data();
+
+            // 3. حفظ بيانات بسيطة فقط (بدون تعقيد)
+            const sessionUser = {
+                uid: user.uid,
+                email: user.email,
+                role: userData.role || "user",
+                projectId: userData.projectId || null
+            };
+
+            localStorage.setItem("currentUser", JSON.stringify(sessionUser));
+
+            console.log("✅ Login Success:", sessionUser);
+
+            // 4. تحويل مباشر
+            window.location.href = "dashboard.html";
+
+            return sessionUser;
+
+        } catch (error) {
+            console.error("❌ Login Error:", error);
+            alert("خطأ في تسجيل الدخول: " + error.message);
         }
-
-        const userData = userSnap.data();
-
-        // ❌ لا localStorage هنا (مهم جدًا)
-        console.log("User Login:", userData);
-
-        return { user, userData };
     },
 
+
+    // ============================================
     // 🚪 تسجيل الخروج
+    // ============================================
     logout: async () => {
-        await signOut(auth);
+        try {
+            await signOut(auth);
+            localStorage.removeItem("currentUser");
+            window.location.href = "index.html";
+        } catch (error) {
+            console.error(error);
+        }
     },
 
-    // 👁️ مراقبة الحالة (مصدر واحد فقط)
+
+    // ============================================
+    // 👤 المستخدم الحالي
+    // ============================================
+    getCurrentUser: () => {
+        try {
+            return JSON.parse(localStorage.getItem("currentUser"));
+        } catch {
+            return null;
+        }
+    },
+
+
+    // ============================================
+    // 👁️ مراقبة الحالة (بسيط)
+    // ============================================
     onAuthStateChanged: (callback) => {
         onAuthStateChanged(auth, async (user) => {
 
@@ -52,54 +97,4 @@ export const authService = {
                 return;
             }
 
-            const userSnap = await getDoc(doc(db, "users", user.uid));
-
-            if (!userSnap.exists()) {
-                callback(null);
-                return;
-            }
-
-            callback({
-                uid: user.uid,
-                ...userSnap.data()
-            });
-        });
-    }
-};
-
-
-// ============================================
-// User Management Service
-// ============================================
-
-export const userManagementService = {
-
-    createUser: async (email, password, displayName, role = "user", projectId = null) => {
-
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        await updateProfile(user, { displayName });
-
-        await setDoc(doc(db, "users", user.uid), {
-            email,
-            displayName,
-            role,
-            projectId,
-            status: "active",
-            createdAt: Date.now()
-        });
-
-        return user;
-    },
-
-    getAllUsers: async () => {
-        const q = query(collection(db, "users"), where("status", "==", "active"));
-        const snap = await getDocs(q);
-
-        return snap.docs.map(d => ({
-            id: d.id,
-            ...d.data()
-        }));
-    }
-};
+            const snap = await getDoc(doc(db, "users", user.uid
