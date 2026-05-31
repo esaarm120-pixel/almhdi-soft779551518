@@ -2,21 +2,21 @@ import { db } from "../config/firebase-config.js";
 import { collection, getDocs, query, where, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 export const subscriberService = {
-    // جلب المشتركين مع دعم صلاحية السوبر أدمن
+    // Function to get all subscribers with super_admin support
     getAllSubscribers: async () => {
         const user = JSON.parse(localStorage.getItem('currentUser'));
-        if (!user || !user.uid) throw new Error("غير مسجل");
+        if (!user || !user.uid) throw new Error("يرجى تسجيل الدخول أولاً");
 
-        // جلب بيانات المستخدم للتأكد من الرتبة
+        // Fetch user document from Firestore to verify role
         const userDoc = await getDoc(doc(db, "users", user.uid));
         const userData = userDoc.data();
 
         let q;
-        // إذا كنت السوبر أدمن، اجلب كل المشتركين من كل مكان
+        // If user is super_admin, fetch all subscribers
         if (userData && userData.role === 'super_admin') {
             q = collection(db, "subscribers");
         } else {
-            // إذا كنت مستخدماً عادياً، اجلب مشتركي مشروعك فقط
+            // Otherwise, fetch subscribers for the user's specific project
             q = query(collection(db, "subscribers"), where("projectId", "==", user.projectId));
         }
 
@@ -24,7 +24,7 @@ export const subscriberService = {
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     },
 
-    // حذف مشترك
+    // Function to delete a subscriber
     deleteSubscriber: async (id) => {
         return await deleteDoc(doc(db, "subscribers", id));
     }
