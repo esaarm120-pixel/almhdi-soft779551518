@@ -144,3 +144,77 @@ document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 
 /* ===== حذف مشترك ===== */
 window.deleteSub = async function(id){
+if(!confirm("هل تريد حذف المشترك؟")) return;
+
+try{
+await subscriberService.deleteSubscriber(id);
+loadSubscribers();
+}catch(e){
+alert("خطأ في الحذف");
+console.log(e);
+}
+}
+
+/* ===== عرض الجدول ===== */
+function renderTable(subscribers){
+
+const container = document.getElementById("tableContent");
+
+if(!subscribers.length){
+container.innerHTML = "<div class='loading'>لا يوجد مشتركين</div>";
+return;
+}
+
+let html = `
+<table>
+<tr>
+<th>الاسم</th>
+<th>الهاتف</th>
+<th>إجراء</th>
+</tr>
+`;
+
+subscribers.forEach(sub=>{
+html += `
+<tr>
+<td>${sub.name}</td>
+<td>${sub.phone || "-"}</td>
+<td><button class="delete" onclick="deleteSub('${sub.id}')">حذف</button></td>
+</tr>
+`;
+});
+
+html += "</table>";
+
+container.innerHTML = html;
+}
+
+/* ===== تحميل المشتركين ===== */
+async function loadSubscribers(){
+try{
+
+const subscribers = await subscriberService.getAllSubscribers();
+
+document.getElementById("totalCount").textContent = subscribers.length;
+
+// توحيد ID
+const formatted = subscribers.map(s=>({
+...s,
+id: s.id || s.key || s.uid
+}));
+
+renderTable(formatted);
+
+}catch(error){
+console.log("Error:",error);
+document.getElementById("tableContent").innerHTML =
+"<div class='loading'>خطأ في تحميل البيانات</div>";
+}
+}
+
+loadSubscribers();
+
+</script>
+
+</body>
+</html>
