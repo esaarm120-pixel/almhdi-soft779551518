@@ -3,170 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة التحكم</title>
+<title>Dashboard</title>
 
 <style>
-
-:root{
---main:#00e676;
---bg:#121212;
---card:#1e1e1e;
---border:#333;
-}
 
 body{
 margin:0;
 padding:20px;
-background:var(--bg);
+background:#121212;
 color:white;
-font-family:'Segoe UI',sans-serif;
+font-family:Arial;
 }
 
-/* ===== HEADER ===== */
-.header{
-background:var(--card);
-padding:15px;
-border-radius:15px;
-border:1px solid var(--border);
-margin-bottom:20px;
-}
-
-.header-top{
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.project-name{
-font-size:18px;
-font-weight:bold;
-color:var(--main);
-}
-
-.header-info{
-font-size:13px;
-color:#aaa;
-margin-top:10px;
-line-height:1.8;
-}
-
-.header-info span{
-color:white;
-font-weight:bold;
-}
-
-/* ===== MARQUEE SIGNATURE ===== */
+/* ===== SIGNATURE ONLY ===== */
 .signature{
-overflow:hidden;
-white-space:nowrap;
-background:var(--card);
+margin-top:15px;
+background:#1e1e1e;
 padding:10px;
 border-radius:12px;
-border:1px solid var(--border);
-margin-top:12px;
+border:1px solid #333;
+overflow:hidden;
+white-space:nowrap;
+direction:rtl;
 }
 
 .marquee{
 display:inline-block;
-padding-left:100%;
-animation:move 12s linear infinite;
+white-space:nowrap;
+padding-right:100%;
+animation:moveRTL 15s linear infinite;
 font-weight:bold;
 }
 
-@keyframes move{
-0%{transform:translateX(0)}
-100%{transform:translateX(-100%)}
+/* حركة من اليمين لليسار */
+@keyframes moveRTL{
+0%{
+transform:translateX(100%);
+}
+100%{
+transform:translateX(-100%);
+}
 }
 
-/* ===== DASHBOARD ===== */
-.dashboard{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:12px;
-margin-top:15px;
-}
-
-.card{
-background:var(--card);
-padding:18px;
-border-radius:15px;
-border:1px solid var(--border);
-text-align:center;
-}
-
-.card h4{
-margin:0;
-font-size:12px;
-color:#aaa;
-}
-
-.card span{
-display:block;
-margin-top:8px;
-font-size:20px;
-font-weight:bold;
-color:var(--main);
-}
-
-/* ===== ACTIONS ===== */
-.section{
-background:var(--card);
-padding:15px;
-border-radius:15px;
-margin-top:15px;
-border:1px solid var(--border);
-}
-
-.section-title{
-font-weight:bold;
-margin-bottom:10px;
-}
-
-.quick-actions{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:10px;
-}
-
-.btn{
-background:var(--card);
-border:1px solid var(--border);
-padding:15px;
-border-radius:12px;
-color:white;
-cursor:pointer;
-}
-
-.btn:hover{
-border-color:var(--main);
-}
-
-/* ===== ALERT ===== */
-.alert{
-background:#2a2200;
-padding:10px;
-border-radius:10px;
-margin-bottom:8px;
-font-size:13px;
-}
-
-/* ===== ACTIVITY ===== */
-.activity{
-display:flex;
-justify-content:space-between;
-font-size:13px;
-padding:8px 0;
-border-bottom:1px solid #2a2a2a;
-}
-
-/* ===== SIGNATURE COLOR ANIMATION ===== */
+/* تأثير ناعم */
 #signature{
-animation:glow 2s infinite alternate;
-}
-
-@keyframes glow{
-0%{opacity:0.6;text-shadow:0 0 5px var(--main);}
-100%{opacity:1;text-shadow:0 0 15px var(--main);}
+transition:0.5s;
 }
 
 </style>
@@ -174,151 +55,32 @@ animation:glow 2s infinite alternate;
 
 <body>
 
-<!-- ===== HEADER ===== -->
-<div class="header">
-
-<div class="header-top">
-<div class="project-name" id="projectName">جارٍ التحميل...</div>
-<div onclick="location.href='settings.html'" style="cursor:pointer;font-size:22px;">⚙️</div>
-</div>
-
-<div class="header-info">
-<div>🏘️ القرية: <span id="villageName">---</span></div>
-<div>👤 المدير: <span id="managerName">---</span></div>
-<div>🏢 المديرية: <span id="districtName">---</span></div>
-<div>🌍 المحافظة: <span id="governorateName">---</span></div>
-</div>
-
+<!-- ===== SIGNATURE ===== -->
 <div class="signature" id="signature">
 <div class="marquee">
-✨ برمجة وتطوير : عصام المهدي | 779551518 ✨
-&nbsp;&nbsp; | &nbsp;&nbsp;
+✨ برمجة وتطوير : عصام المهدي | 779551518 ✨ &nbsp;&nbsp; ✦ &nbsp;&nbsp;
 لا تنسَ ذكر الله والصلاة على النبي ﷺ
 </div>
 </div>
 
-</div>
+<script>
 
-<!-- ===== DASHBOARD ===== -->
-<div class="dashboard">
+/* ألوان متغيرة */
+const colors = [
+"#00e676",
+"#00bcd4",
+"#ffeb3b",
+"#ff5252",
+"#ab47bc",
+"#42a5f5"
+];
 
-<div class="card">
-<h4>👥 المشتركين</h4>
-<span id="subsCount">0</span>
-</div>
+let i = 0;
 
-<div class="card">
-<h4>🧾 الفواتير</h4>
-<span id="pendingBills">0</span>
-</div>
-
-<div class="card">
-<h4>💰 الصندوق</h4>
-<span id="cashBalance">0</span>
-</div>
-
-<div class="card">
-<h4>📊 تحصيل اليوم</h4>
-<span id="todayIncome">0</span>
-</div>
-
-</div>
-
-<!-- ===== ACTIONS ===== -->
-<div class="section">
-
-<div class="section-title">⚡ الإجراءات</div>
-
-<div class="quick-actions">
-
-<button class="btn" onclick="location.href='subscribers.html'">👥 المشتركين</button>
-<button class="btn" onclick="location.href='readings.html'">💧 القراءات</button>
-<button class="btn" onclick="location.href='expenses.html'">📉 المصروفات</button>
-<button class="btn" onclick="location.href='receipts.html'">💵 التقارير</button>
-
-</div>
-
-</div>
-
-<!-- ===== ALERTS ===== -->
-<div class="section">
-
-<div class="section-title">🔔 تنبيهات</div>
-
-<div class="alert">⚠ فواتير متأخرة تحتاج متابعة</div>
-<div class="alert">📌 تأكد من إدخال القراءات</div>
-
-</div>
-
-<!-- ===== ACTIVITY ===== -->
-<div class="section">
-
-<div class="section-title">📌 آخر النشاطات</div>
-
-<div class="activity"><span>إضافة مشترك</span><span>اليوم</span></div>
-<div class="activity"><span>تسجيل قراءة</span><span>الآن</span></div>
-<div class="activity"><span>تحصيل فاتورة</span><span>0 ر.ي</span></div>
-
-</div>
-
-<!-- ===== FIREBASE ===== -->
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
-
-const firebaseConfig = {
-apiKey: "YOUR_API_KEY",
-authDomain: "YOUR_PROJECT.firebaseapp.com",
-databaseURL: "YOUR_DB_URL",
-projectId: "YOUR_PROJECT",
-storageBucket: "YOUR_PROJECT.appspot.com",
-messagingSenderId: "XXX",
-appId: "XXX"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-/* ===== SETTINGS ===== */
-onValue(ref(db,'settings/projectName'),s=>{
-projectName.innerText = s.val() || "مشروع مياه";
-});
-
-onValue(ref(db,'settings/village'),s=>{
-villageName.innerText = s.val() || "---";
-});
-
-onValue(ref(db,'settings/manager'),s=>{
-managerName.innerText = s.val() || "---";
-});
-
-onValue(ref(db,'settings/district'),s=>{
-districtName.innerText = s.val() || "---";
-});
-
-onValue(ref(db,'settings/governorate'),s=>{
-governorateName.innerText = s.val() || "---";
-});
-
-/* ===== THEME COLOR ===== */
-onValue(ref(db,'settings/themeColor'),s=>{
-const color = s.val() || "#00e676";
-document.documentElement.style.setProperty('--main', color);
-});
-
-/* ===== STATS ===== */
-onValue(ref(db,'stats/subscribers'),s=>{
-subsCount.innerText = s.val() || 0;
-});
-
-onValue(ref(db,'stats/pendingBills'),s=>{
-pendingBills.innerText = s.val() || 0;
-});
-
-onValue(ref(db,'stats/todayIncome'),s=>{
-todayIncome.innerText = s.val() || 0;
-});
+setInterval(()=>{
+document.getElementById("signature").style.color = colors[i];
+i = (i + 1) % colors.length;
+},2000);
 
 </script>
 
