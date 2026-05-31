@@ -11,32 +11,51 @@ font-family:Arial;
 background:#121212;
 color:white;
 padding:20px;
+display:flex;
+justify-content:center;
+}
+
+.container{
+width:100%;
+max-width:420px;
+}
+
+h2{
+color:#00e676;
+text-align:center;
+margin-bottom:15px;
 }
 
 .card{
 background:#1e1e1e;
 padding:15px;
 border-radius:12px;
-margin-bottom:12px;
 border:1px solid #333;
+margin-bottom:12px;
 }
 
-h2{color:#00e676}
+label{
+font-size:13px;
+color:#aaa;
+display:block;
+margin-top:10px;
+}
 
 input,select{
 width:100%;
 padding:10px;
-margin-top:8px;
+margin-top:6px;
 border-radius:8px;
 border:1px solid #333;
 background:#121212;
 color:white;
+font-size:14px;
 }
 
 button{
 width:100%;
 padding:12px;
-margin-top:10px;
+margin-top:12px;
 border:none;
 border-radius:10px;
 background:#00e676;
@@ -47,12 +66,17 @@ cursor:pointer;
 .row{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:10px;
+gap:8px;
 }
 
 .small{
-font-size:12px;
-color:#aaa;
+font-size:11px;
+color:#888;
+margin-top:5px;
+}
+
+#mixedBox{
+display:none;
 }
 
 </style>
@@ -60,49 +84,48 @@ color:#aaa;
 
 <body>
 
-<h2>🧾 سند قبض احترافي</h2>
+<div class="container">
+
+<h2>🧾 سند قبض</h2>
 
 <div class="card">
 
-<!-- اختيار المشترك -->
-<label>👤 اختر المشترك</label>
+<label>👤 المشترك</label>
 <select id="customerList">
 <option value="">جاري التحميل...</option>
 </select>
 
-<!-- المبلغ -->
 <label>💰 المبلغ</label>
-<input id="amount" type="number" placeholder="0">
+<input id="amount" type="number" placeholder="أدخل المبلغ">
 
-<!-- ملاحظة -->
 <label>📝 ملاحظة</label>
-<input id="note" placeholder="مثال: تسديد فاتورة ماء">
+<input id="note" placeholder="مثال: تسديد فاتورة">
 
-<!-- طريقة الدفع -->
 <label>💳 طريقة الدفع</label>
 <select id="type" onchange="toggleMixed()">
 <option value="cash">💵 نقد</option>
 <option value="transfer">🏦 تحويل</option>
-<option value="mixed">🔀 مختلط</option>
+<option value="mixed">💳 نقد + تحويل</option>
 </select>
 
-<!-- تقسيم مختلط -->
-<div id="mixedBox" style="display:none">
+<div id="mixedBox">
 <div class="row">
 <input id="cashPart" type="number" placeholder="نقد">
 <input id="transferPart" type="number" placeholder="تحويل">
 </div>
-<div class="small">إذا اخترت مختلط يجب توزيع المبلغ</div>
+<div class="small">يجب توزيع المبلغ بين النقد والتحويل</div>
 </div>
 
 <button onclick="saveReceipt()">💾 حفظ سند القبض</button>
 
 </div>
 
+</div>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getDatabase, ref, push, set, get, update, onValue } 
+import { getDatabase, ref, push, set, get, update, onValue }
 from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -122,38 +145,40 @@ onValue(ref(db,"customers"), snapshot=>{
 customerList.innerHTML = "<option value=''>اختر المشترك</option>";
 
 snapshot.forEach(child=>{
-const data = child.val();
-customerList.innerHTML += `
-<option value="${child.key}">${data.name}</option>
-`;
+let data = child.val();
+customerList.innerHTML += `<option value="${child.key}">${data.name}</option>`;
 });
 });
 
-/* ===== إظهار المختلط ===== */
+/* ===== إظهار النقد + تحويل ===== */
 window.toggleMixed = function(){
 const type = document.getElementById("type").value;
 document.getElementById("mixedBox").style.display =
-type === "mixed" ? "block" : "none";
+(type === "mixed") ? "block" : "none";
 }
 
 /* ===== حفظ سند القبض ===== */
 window.saveReceipt = async function(){
 
-const customerId = customerList.value;
+const customerId = document.getElementById("customerList").value;
 const amount = Number(document.getElementById("amount").value);
 const note = document.getElementById("note").value;
 const type = document.getElementById("type").value;
 
 if(!customerId || !amount){
-alert("أدخل البيانات كاملة");
+alert("⚠️ أكمل البيانات");
 return;
 }
 
 let cash = 0;
 let transfer = 0;
 
-if(type === "cash") cash = amount;
-else if(type === "transfer") transfer = amount;
+if(type === "cash"){
+cash = amount;
+}
+else if(type === "transfer"){
+transfer = amount;
+}
 else{
 cash = Number(document.getElementById("cashPart").value || 0);
 transfer = Number(document.getElementById("transferPart").value || 0);
@@ -171,7 +196,7 @@ note,
 date:Date.now()
 });
 
-/* تحديث الصناديق */
+/* ===== تحديث الصناديق ===== */
 const cashRef = ref(db,"cashBox");
 const transferRef = ref(db,"transferBox");
 
@@ -183,12 +208,14 @@ cashBox:(cashSnap.val()||0)+cash,
 transferBox:(transferSnap.val()||0)+transfer
 });
 
-alert("تم حفظ سند القبض بنجاح ✔️");
+alert("✅ تم حفظ سند القبض");
 
 document.getElementById("amount").value="";
 document.getElementById("note").value="";
 document.getElementById("cashPart").value="";
 document.getElementById("transferPart").value="";
+document.getElementById("type").value="cash";
+document.getElementById("mixedBox").style.display="none";
 }
 
 </script>
