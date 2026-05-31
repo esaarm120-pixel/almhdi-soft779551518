@@ -1,58 +1,146 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المشتركين</title>
-    <style>
-        /* (استخدم نفس تنسيقاتك الأصلية هنا لضمان بقاء الشكل كما هو) */
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة المشتركين</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#121212;
+color:white;
+}
+
+/* ===== NAVBAR ===== */
+.navbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px;
+background:#1e1e1e;
+border-bottom:1px solid #333;
+}
+
+.navbar h1{
+font-size:18px;
+color:#00e676;
+margin:0;
+}
+
+button{
+padding:8px 12px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:#00e676;
+color:black;
+font-weight:bold;
+}
+
+/* ===== CONTAINER ===== */
+.container{
+padding:15px;
+}
+
+.header{
+background:#1e1e1e;
+padding:12px;
+border-radius:10px;
+margin-bottom:10px;
+border:1px solid #333;
+}
+
+.header h2{
+margin:0;
+font-size:16px;
+}
+
+.header p{
+margin:5px 0 0;
+color:#aaa;
+}
+
+/* ===== TABLE ===== */
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+background:#1e1e1e;
+border-radius:10px;
+overflow:hidden;
+}
+
+th, td{
+padding:10px;
+text-align:center;
+border-bottom:1px solid #333;
+}
+
+th{
+background:#111;
+color:#00e676;
+}
+
+tr:hover{
+background:#222;
+}
+
+/* ===== DELETE ===== */
+.delete{
+background:red;
+color:white;
+padding:5px 10px;
+border-radius:6px;
+border:none;
+cursor:pointer;
+}
+
+.loading{
+text-align:center;
+color:#aaa;
+padding:20px;
+}
+</style>
 </head>
+
 <body>
 
+<!-- ===== NAVBAR ===== -->
 <div class="navbar">
-    <h1>👥 إدارة المشتركين</h1>
-    <div>
-        <button onclick="window.location.href='dashboard.html'" style="margin-right: 10px;">📊 العودة للوحة التحكم</button>
-        <button id="logoutBtn">🚪 تسجيل الخروج</button>
-    </div>
+<h1>👥 إدارة المشتركين</h1>
+<div>
+<button onclick="location.href='dashboard.html'">📊 الرئيسية</button>
+<button id="logoutBtn" style="background:red;color:white;">🚪 خروج</button>
+</div>
 </div>
 
+<!-- ===== CONTENT ===== -->
 <div class="container">
-    <div class="header">
-        <h2>قائمة المشتركين</h2>
-        <p>إجمالي المشتركين: <strong id="totalCount">0</strong></p>
-    </div>
 
-    <div id="tableContent">
-        <div class="loading"><div class="spinner"></div><p>جاري تحميل البيانات...</p></div>
-    </div>
+<div class="header">
+<h2>قائمة المشتركين</h2>
+<p>إجمالي المشتركين: <strong id="totalCount">0</strong></p>
 </div>
 
+<div id="tableContent" class="loading">
+جاري تحميل البيانات...
+</div>
+
+</div>
+
+<!-- ===== SCRIPT ===== -->
 <script type="module">
-    import { protectPage, logoutUser } from "./js/auth-manager.js";
-    import { subscriberService } from "./js/subscriber-service.js";
 
-    // 1. تفعيل الحماية المركزية (تسمح لك بالدخول فوراً إذا كنت أدمن)
-    protectPage();
+import { protectPage, logoutUser } from "./js/auth-manager.js";
+import { subscriberService } from "./js/subscriber-service.js";
 
-    // 2. ربط زر الخروج المركزي
-    document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+/* ===== حماية الصفحة ===== */
+protectPage();
 
-    // 3. تحميل البيانات (باقي كودك كما هو)
-    async function loadSubscribers() {
-        try {
-            const subscribers = await subscriberService.getAllSubscribers();
-            document.getElementById('totalCount').textContent = subscribers.length;
-            // ... (بقية كود رندر الجدول)
-            console.log("تم تحميل البيانات:", subscribers);
-        } catch (error) {
-            console.error('❌ خطأ:', error);
-        }
-    }
+/* ===== تسجيل خروج ===== */
+document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 
-    loadSubscribers();
-</script>
-
-</body>
-</html>
+/* ===== حذف مشترك ===== */
+window.deleteSub = async function(id){
