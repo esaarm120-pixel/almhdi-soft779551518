@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التسجيل - نظام إدارة المياه</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .signup-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            animation: slideUp 0.5s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: #fff;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .error-message {
+            display: none;
+            background-color: #fee;
+            color: #c33;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            border-right: 4px solid #c33;
+        }
+
+        .success-message {
+            display: none;
+            background-color: #efe;
+            color: #3c3;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            border-right: 4px solid #3c3;
+        }
+
+        .signup-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 15px;
+        }
+
+        .signup-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .signup-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-right: 4px solid #667eea;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="signup-container">
+    <div class="logo-section">
+        <div class="logo">🚰</div>
+        <h1>إنشاء حساب جديد</h1>
+        <p class="subtitle">انضم لنظام إدارة المشاريع المتكامل</p>
+    </div>
+
+    <div class="info-box">
+        ℹ️ قم بملء البيانات أدناه لإنشاء حساب جديد ومشروعك الخاص.
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+    <div class="success-message" id="successMessage"></div>
+
+    <form id="signupForm" onsubmit="handleSignup(event)">
+        
+        <div class="form-section">
+            <div class="section-title">
+                <span class="required">*</span> بيانات المستخدم
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الاسم الأول:</label>
+                    <input type="text" id="firstName" placeholder="محمد" required>
+                </div>
+                <div class="form-group">
+                    <label>اسم العائلة:</label>
+                    <input type="text" id="lastName" placeholder="أحمد" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>البريد الإلكتروني:</label>
+                <input type="email" id="email" placeholder="example@gmail.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>رقم الهاتف:</label>
+                <input type="tel" id="phone" placeholder="967xxxxxxxxx" required>
+            </div>
+
+            <div class="form-group">
+                <label>كلمة المرور:</label>
+                <input type="password" id="password" placeholder="••••••••" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label>تأكيد كلمة المرور:</label>
+                <input type="password" id="confirmPassword" placeholder="••••••••" required>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-title">
+                <span class="required">*</span> بيانات المشروع
+            </div>
+
+            <div class="form-group">
+                <label>اسم المشروع:</label>
+                <input type="text" id="projectName" placeholder="مياه قرية الحسينية" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>المحافظة:</label>
+                    <select id="governorate" required>
+                        <option value="">اختر</option>
+                        <option value="صنعاء">صنعاء</option>
+                        <option value="عدن">عدن</option>
+                        <option value="الحديدة">الحديدة</option>
+                        <option value="تعز">تعز</option>
+                        <option value="إب">إب</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>المديرية:</label>
+                    <input type="text" id="directorate" placeholder="المنصورية" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>القرية:</label>
+                <input type="text" id="village" placeholder="الحسينية" required>
+            </div>
+
+            <div class="form-group">
+                <label>سعر الوحدة:</label>
+                <input type="number" id="unitPrice" placeholder="150" value="150" required>
+            </div>
+
+            <div class="form-group">
+                <label>رسم الاشتراك:</label>
+                <input type="number" id="subscriptionFee" placeholder="400" value="400" required>
+            </div>
+        </div>
+
+        <button type="submit" class="signup-btn" id="signupBtn">إنشاء الحساب</button>
+    </form>
+
+    <div class="login-link">
+        لديك حساب؟ <a onclick="window.location.href='index.html'">سجل الدخول</a>
+    </div>
+</div>
+
+<script type="module">
+    import { createProject } from "./js/projects-system.js";
+    import { db, auth } from "./config/firebase-config.js";
+    import { errorMessages } from "./config/firebase-config.js";
+    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    window.handleSignup = async function(event) {
+        event.preventDefault();
+
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const projectName = document.getElementById('projectName').value.trim();
+        const governorate = document.getElementById('governorate').value;
+        const directorate = document.getElementById('directorate').value.trim();
+        const village = document.getElementById('village').value.trim();
+        const unitPrice = parseFloat(document.getElementById('unitPrice').value);
+        const subscriptionFee = parseFloat(document.getElementById('subscriptionFee').value);
+
+        const errorDiv = document.getElementById('errorMessage');
+        const successDiv = document.getElementById('successMessage');
+        const signupBtn = document.getElementById('signupBtn');
+
+        errorDiv.style.display = 'none';
+        successDiv.style.display = 'none';
+
+        try {
+            if (password !== confirmPassword) {
+                throw new Error('كلمات المرور غير متطابقة');
+            }
+
+            signupBtn.disabled = true;
+
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const userId = userCredential.user.uid;
+
+            await setDoc(doc(db, "users", userId), {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                phone: phone,
+                role: "project_admin",
+                createdAt: new Date().toISOString(),
+                status: "active"
+            });
+
+            const projectResult = await createProject(db, {
+                name: projectName,
+                governorate: governorate,
+                directorate: directorate,
+                village: village,
+                manager: `${firstName} ${lastName}`,
+                managerPhone: phone,
+                adminUid: userId,
+                unitPrice: unitPrice,
+                subscriptionFee: subscriptionFee
+            });
+
+            if (projectResult.success) {
+                await setDoc(doc(db, `projects/${projectResult.projectId}/members/${userId}`), {
+                    userId: userId,
+                    name: `${firstName} ${lastName}`,
+                    email: email,
+                    role: "project_admin",
+                    joinedAt: new Date().toISOString()
+                });
+
+                successDiv.textContent = '✅ تم إنشاء الحساب بنجاح! جاري التوجيه...';
+                successDiv.style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        } catch (error) {
+            const msg = errorMessages[error.code] || error.message;
+            errorDiv.textContent = `❌ ${msg}`;
+            errorDiv.style.display = 'block';
+            signupBtn.disabled = false;
+        }
+    };
+</script>
+
+</body>
+</html>
