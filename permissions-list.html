@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة الصلاحيات</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .role-card {
+            background: #2d2d44;
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid #3d3d5c;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .role-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #3d3d5c;
+        }
+
+        .role-icon {
+            font-size: 32px;
+            margin-right: 15px;
+        }
+
+        .role-title {
+            flex: 1;
+        }
+
+        .role-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .role-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .permissions-list {
+            list-style: none;
+        }
+
+        .permission-item {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            border-bottom: 1px solid #3d3d5c;
+        }
+
+        .permission-item:last-child {
+            border-bottom: none;
+        }
+
+        .permission-check {
+            color: #00ff88;
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .permission-text {
+            flex: 1;
+        }
+
+        .permission-disabled .permission-check {
+            color: #666;
+            content: '✕';
+        }
+
+        .level-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(102, 126, 234, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .role-card {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📋 قائمة الصلاحيات والأدوار</h1>
+        <p style="opacity: 0.9; margin-top: 10px;">نظام الأدوار والصلاحيات المتقدم</p>
+    </div>
+
+    <div class="roles-grid" id="rolesContainer"></div>
+</div>
+
+<script type="module">
+    import { ROLE_DESCRIPTIONS, ROLE_PERMISSIONS } from "./js/permissions-system.js";
+
+    const container = document.getElementById('rolesContainer');
+
+    const roles = [
+        {
+            key: 'super_admin',
+            icon: '👑',
+            name: 'سوبر أدمن',
+            description: 'تحكم كامل على النظام',
+            permissions: ['create_project', 'delete_project', 'manage_project_status', 'manage_users', 'assign_roles']
+        },
+        {
+            key: 'project_admin',
+            icon: '🔐',
+            name: 'أدمن المشروع',
+            description: 'إدارة كاملة للمشروع',
+            permissions: ['edit_project', 'manage_users', 'manage_subscribers', 'manage_expenses', 'manage_settings']
+        },
+        {
+            key: 'project_manager',
+            icon: '👨‍💼',
+            name: 'مدير المشروع',
+            description: 'إدارة العمليات اليومية',
+            permissions: ['manage_subscribers', 'add_reading', 'generate_invoices', 'manage_expenses']
+        },
+        {
+            key: 'accountant',
+            icon: '💰',
+            name: 'محاسب',
+            description: 'إدارة المالية والفواتير',
+            permissions: ['add_reading', 'generate_invoices', 'manage_expenses', 'view_reports']
+        },
+        {
+            key: 'employee',
+            icon: '👤',
+            name: 'موظف',
+            description: 'صلاحيات محدودة',
+            permissions: ['add_reading', 'view_subscribers']
+        },
+        {
+            key: 'viewer',
+            icon: '👁️',
+            name: 'عارض',
+            description: 'عرض البيانات فقط',
+            permissions: ['view_subscribers', 'view_reports']
+        }
+    ];
+
+    roles.forEach((role, index) => {
+        const card = document.createElement('div');
+        card.className = 'role-card';
+        
+        let permissionsHtml = '';
+        role.permissions.forEach(perm => {
+            const permissionNames = {
+                'create_project': '➕ إنشاء مشروع',
+                'delete_project': '🗑️ حذف مشروع',
+                'manage_project_status': '⚙️ تغيير حالة المشروع',
+                'manage_users': '👥 إدارة المستخدمين',
+                'assign_roles': '🔑 تعيين الأدوار',
+                'edit_project': '✏️ تعديل المشروع',
+                'manage_subscribers': '👨‍👩‍👧‍👦 إدارة المشتركين',
+                'add_reading': '📖 إضافة قراءة',
+                'generate_invoices': '🧾 إنشاء الفواتير',
+                'manage_expenses': '💸 إدارة المصروفات',
+                'manage_settings': '⚙️ الإعدادات',
+                'view_subscribers': '👁️ عرض المشتركين',
+                'view_reports': '📊 عرض التقارير'
+            };
+            permissionsHtml += `
+                <li class="permission-item">
+                    <span class="permission-check">✓</span>
+                    <span class="permission-text">${permissionNames[perm] || perm}</span>
+                </li>
+            `;
+        });
+
+        card.innerHTML = `
+            <div class="level-badge">المستوى ${6 - index}</div>
+            <div class="role-header">
+                <div class="role-icon">${role.icon}</div>
+                <div class="role-title">
+                    <div class="role-name">${role.name}</div>
+                    <div class="role-desc">${role.description}</div>
+                </div>
+            </div>
+            <ul class="permissions-list">
+                ${permissionsHtml}
+            </ul>
+        `;
+        container.appendChild(card);
+    });
+</script>
+
+</body>
+</html>

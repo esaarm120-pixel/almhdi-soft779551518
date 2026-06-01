@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+        }
+
+        .btn-add {
+            background: #00ff88;
+            color: #1e1e2e;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .table-container {
+            background: #2d2d44;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #3d3d5c;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #1e1e2e;
+            padding: 15px;
+            text-align: right;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #3d3d5c;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .role-admin {
+            background: #667eea;
+            color: white;
+        }
+
+        .role-manager {
+            background: #764ba2;
+            color: white;
+        }
+
+        .role-user {
+            background: #3d3d5c;
+            color: #aaa;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .btn-edit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2d2d44;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #3d3d5c;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: #1e1e2e;
+            border: 1px solid #3d3d5c;
+            border-radius: 6px;
+            color: #fff;
+            font-family: inherit;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #3d3d5c;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>👥 إدارة المستخدمين</h1>
+        <button class="btn-add" onclick="openAddUserModal()">+ إضافة مستخدم</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>البريد</th>
+                    <th>الدور</th>
+                    <th>تاريخ الإضافة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="usersList"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="userModal">
+    <div class="modal-content">
+        <div style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #667eea;" id="modalTitle">إضافة مستخدم جديد</div>
+        
+        <div class="form-group">
+            <label>الاسم</label>
+            <input type="text" id="userName" placeholder="أدخل الاسم">
+        </div>
+        
+        <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="email" id="userEmail" placeholder="example@gmail.com">
+        </div>
+        
+        <div class="form-group">
+            <label>كلمة المرور</label>
+            <input type="password" id="userPassword" placeholder="••••••••">
+        </div>
+        
+        <div class="form-group">
+            <label>الدور</label>
+            <select id="userRole">
+                <option value="employee">👤 موظف</option>
+                <option value="project_manager">👨‍💼 مدير مشروع</option>
+                <option value="project_admin">🔐 أدمن مشروع</option>
+            </select>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeUserModal()">إلغاء</button>
+            <button class="btn btn-primary" onclick="saveUser()">حفظ</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { db, auth } from "./config/firebase-config.js";
+    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    let users = [];
+    let editingUserId = null;
+
+    async function loadUsers() {
+        const usersSnap = await getDocs(collection(db, 'users'));
+        users = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderUsers();
+    }
+
+    function renderUsers() {
+        const list = document.getElementById('usersList');
+        list.innerHTML = '';
+        
+        users.forEach(user => {
+            const createdDate = new Date(user.createdAt).toLocaleDateString('ar-EG');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${user.firstName || user.name || 'بدون اسم'}</td>
+                <td>${user.email}</td>
+                <td><span class="role-badge role-${user.role}">${getRoleLabel(user.role)}</span></td>
+                <td>${createdDate}</td>
+                <td>
+                    <button class="btn btn-edit" onclick="editUser('${user.id}')">تعديل</button>
+                    <button class="btn btn-delete" onclick="deleteUser('${user.id}')">حذف</button>
+                </td>
+            `;
+            list.appendChild(row);
+        });
+    }
+
+    function getRoleLabel(role) {
+        const labels = {
+            'employee': '👤 موظف',
+            'project_manager': '👨‍💼 مدير',
+            'project_admin': '🔐 أدمن',
+            'super_admin': '👑 سوبر'
+        };
+        return labels[role] || role;
+    }
+
+    window.openAddUserModal = function() {
+        editingUserId = null;
+        document.getElementById('modalTitle').textContent = 'إضافة مستخدم جديد';
+        document.getElementById('userName').value = '';
+        document.getElementById('userEmail').value = '';
+        document.getElementById('userPassword').value = '';
+        document.getElementById('userRole').value = 'employee';
+        document.getElementById('userModal').classList.add('show');
+    };
+
+    window.closeUserModal = function() {
+        document.getElementById('userModal').classList.remove('show');
+    };
+
+    window.saveUser = async function() {
+        try {
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+            const role = document.getElementById('userRole').value;
+
+            if (!name || !email || !password) {
+                alert('يرجى ملء جميع الحقول');
+                return;
+            }
+
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const userId = userCredential.user.uid;
+
+            await setDoc(doc(db, 'users', userId), {
+                firstName: name,
+                email: email,
+                role: role,
+                createdAt: new Date().toISOString(),
+                status: 'active'
+            });
+
+            closeUserModal();
+            loadUsers();
+            alert('تم إضافة المستخدم بنجاح');
+        } catch (error) {
+            alert('خطأ: ' + error.message);
+        }
+    };
+
+    window.deleteUser = async function(userId) {
+        if (confirm('هل تريد حذف هذا المستخدم؟')) {
+            alert('تم الحذف (في نسخة كاملة)');
+        }
+    };
+
+    window.editUser = function(userId) {
+        const user = users.find(u => u.id === userId);
+        editingUserId = userId;
+        document.getElementById('modalTitle').textContent = 'تعديل المستخدم';
+        document.getElementById('userName').value = user.firstName || '';
+        document.getElementById('userEmail').value = user.email;
+        document.getElementById('userRole').value = user.role;
+        document.getElementById('userPassword').disabled = true;
+        document.getElementById('userModal').classList.add('show');
+    };
+
+    loadUsers();
+</script>
+
+</body>
+</html>
