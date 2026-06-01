@@ -6,8 +6,8 @@
     <title>مشروع مياه الحسينية - تسجيل الدخول</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
-        .login-wrapper { background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); width: 100%; max-width: 420px; padding: 40px 30px; animation: slideUp 0.5s ease-out; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-wrapper { background: white; border-radius: 15px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); width: 100%; max-width: 420px; padding: 40px; animation: slideUp 0.5s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .logo-section { text-align: center; margin-bottom: 30px; }
         .logo { font-size: 60px; margin-bottom: 15px; }
@@ -15,10 +15,17 @@
         .subtitle { color: #666; font-size: 13px; line-height: 1.6; }
         .form-group { margin-bottom: 18px; }
         label { display: block; color: #555; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
-        input[type="email"], input[type="password"] { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px; background-color: #f9f9f9; }
-        .login-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; }
-        .error-message { display: none; background-color: #fee; color: #c33; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; border-right: 4px solid #c33; }
-        .success-message { display: none; background-color: #efe; color: #3c3; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; border-right: 4px solid #3c3; }
+        input[type="email"], input[type="password"] { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px; background-color: #f9f9f9; transition: all 0.3s; }
+        input:focus { outline: none; border-color: #667eea; background-color: #fff; }
+        .login-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+        .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .error-message { display: none; background-color: #fee; color: #c33; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; border-right: 4px solid #c33; animation: slideIn 0.3s; }
+        .success-message { display: none; background-color: #efe; color: #3c3; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; border-right: 4px solid #3c3; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .signup-link { text-align: center; margin-top: 15px; font-size: 13px; }
+        .signup-link a { color: #667eea; text-decoration: none; font-weight: 600; }
+        .signup-link a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -36,14 +43,18 @@
     <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
             <label>📧 البريد الإلكتروني:</label>
-            <input type="email" id="email" placeholder="example@gmail.com" required>
+            <input type="email" id="email" placeholder="example@gmail.com" required autocomplete="email">
         </div>
         <div class="form-group">
             <label>🔒 كلمة المرور:</label>
-            <input type="password" id="password" placeholder="••••••••" required>
+            <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
         </div>
         <button type="submit" class="login-btn" id="loginBtn">🔓 تسجيل الدخول</button>
     </form>
+
+    <div class="signup-link">
+        ليس لديك حساب؟ <a href="signup.html">إنشاء حساب جديد</a>
+    </div>
 </div>
 
 <script type="module">
@@ -51,11 +62,11 @@
     import { errorMessages } from "./config/firebase-config.js";
     import { redirectToDashboard } from "./js/auth-system.js";
 
-    // التحقق التلقائي عند فتح الصفحة (بدون حلقة مفرغة)
+    // التحقق التلقائي عند فتح الصفحة
     authService.onAuthStateChanged((user) => {
         if (user && localStorage.getItem('currentUser')) {
-            console.log('✅ المستخدم مسجل دخول بالفعل، جاري التوجيه الذكي...');
-            redirectToDashboard();
+            console.log('✅ المستخدم مسجل دخول بالفعل');
+            setTimeout(() => redirectToDashboard(), 500);
         }
     });
 
@@ -67,25 +78,32 @@
         const successDiv = document.getElementById('successMessage');
         const loginBtn = document.getElementById('loginBtn');
 
+        // إخفاء الرسائل
         errorDiv.style.display = 'none';
         successDiv.style.display = 'none';
         loginBtn.disabled = true;
+        loginBtn.textContent = '⏳ جاري المعالجة...';
 
         try {
+            console.log('🔐 جاري محاولة تسجيل الدخول...');
             const { user, userData } = await authService.login(email, password);
+            
+            console.log('✅ تم التحقق من المستخدم:', user.uid);
             authService.saveUserToLocalStorage(user, userData);
             
-            successDiv.textContent = `✅ مرحباً بك! جاري الدخول...`;
+            successDiv.textContent = `✅ مرحباً بك ${userData.displayName || 'يا مستخدم'}!`;
             successDiv.style.display = 'block';
             
-            // استخدام التوجيه الذكي المدمج في auth-system.js
-            redirectToDashboard(); 
+            console.log('🔄 جاري التوجيه...');
+            setTimeout(() => redirectToDashboard(), 1000);
             
         } catch (error) {
-            const errorMessage = errorMessages[error.code] || error.message;
+            console.error('❌ خطأ في تسجيل الدخول:', error.code, error.message);
+            const errorMessage = errorMessages[error.code] || `خطأ: ${error.message}`;
             errorDiv.textContent = `❌ ${errorMessage}`;
             errorDiv.style.display = 'block';
             loginBtn.disabled = false;
+            loginBtn.textContent = '🔓 تسجيل الدخول';
         }
     };
 </script>
