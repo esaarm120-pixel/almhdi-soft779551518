@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>نظام إدارة المشاريع</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم - سوبر أدمن</title>
 
 <style>
 body{
     margin:0;
     font-family: Arial;
-    background:#f3f6f9;
+    background:#f4f6f9;
 }
 
+/* HEADER */
 header{
     background:#0f172a;
     color:white;
@@ -21,31 +22,33 @@ header{
     align-items:center;
 }
 
-.marquee{
+/* SIGNATURE */
+.signature{
     background:#111827;
     color:#facc15;
     padding:8px;
-    white-space:nowrap;
     overflow:hidden;
+    white-space:nowrap;
 }
 
-.marquee span{
+.signature span{
     display:inline-block;
-    padding-left:100%;
-    animation: move 12s linear infinite;
+    animation: move 10s linear infinite;
 }
 
 @keyframes move{
-    0%{transform:translateX(0)}
-    100%{transform:translateX(-100%)}
+    0%{transform:translateX(-100%)}
+    100%{transform:translateX(100%)}
 }
 
+/* LAYOUT */
 .container{
     display:grid;
-    grid-template-columns:250px 1fr;
-    height:calc(100vh - 100px);
+    grid-template-columns:220px 1fr;
+    min-height:calc(100vh - 100px);
 }
 
+/* SIDEBAR */
 .sidebar{
     background:#1e293b;
     color:white;
@@ -54,18 +57,24 @@ header{
 
 .sidebar button{
     width:100%;
-    margin:5px 0;
     padding:10px;
+    margin:5px 0;
     border:none;
     cursor:pointer;
     background:#334155;
     color:white;
 }
 
-.sidebar button:hover{background:#475569;}
+.sidebar button:hover{
+    background:#475569;
+}
 
-.main{padding:20px; overflow:auto;}
+/* MAIN */
+.main{
+    padding:15px;
+}
 
+/* CARD */
 .card{
     background:white;
     padding:15px;
@@ -74,25 +83,10 @@ header{
     box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
 
-input, select{
-    width:100%;
-    padding:10px;
-    margin:5px 0;
-}
-
-button.action{
-    background:#16a34a;
-    color:white;
-    padding:10px;
-    border:none;
-    width:100%;
-    cursor:pointer;
-}
-
+/* TABLE */
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:10px;
 }
 
 table th, table td{
@@ -105,196 +99,105 @@ table th{
     background:#0f172a;
     color:white;
 }
+
+/* MOBILE */
+@media(max-width:768px){
+    .container{
+        grid-template-columns:1fr;
+    }
+
+    .sidebar{
+        display:flex;
+        overflow-x:auto;
+    }
+
+    .sidebar button{
+        min-width:140px;
+    }
+}
 </style>
 </head>
 
 <body>
 
 <header>
-    <h2>📊 لوحة إدارة المشاريع</h2>
-    <div>Super Admin</div>
+    <h2>👑 لوحة تحكم سوبر أدمن</h2>
+    <div>System Control</div>
 </header>
 
-<div class="marquee">
-<span>برمجة وتطوير عصام المهدي 779551518 - اذكر الله وصل على النبي 🤍</span>
+<!-- ✍️ توقيع متحرك -->
+<div class="signature">
+    <span>برمجة وتطوير عصام المهدي 779551518 — اذكر الله وصل على النبي 🤍</span>
 </div>
 
 <div class="container">
 
+<!-- SIDEBAR -->
 <div class="sidebar">
+    <button onclick="show('home')">الرئيسية</button>
     <button onclick="show('projects')">المشاريع</button>
-    <button onclick="show('expenses')">المصروفات</button>
     <button onclick="show('users')">المستخدمين</button>
+    <button onclick="show('settings')">الإعدادات</button>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
-<!-- PROJECTS -->
-<div id="projects" class="card section">
-    <h3>إضافة مشروع</h3>
-    <input id="pName" placeholder="اسم المشروع">
-    <input id="pCity" placeholder="المحافظة">
-    <input id="pArea" placeholder="المديرية">
-    <input id="pVillage" placeholder="القرية">
-    <input id="pManager" placeholder="اسم مدير المشروع">
-    <button class="action" id="addProjectBtn">إضافة</button>
-
-    <h3>قائمة المشاريع</h3>
-    <table>
-        <thead>
-        <tr>
-            <th>اسم</th>
-            <th>مدير</th>
-        </tr>
-        </thead>
-        <tbody id="projectsList"></tbody>
-    </table>
+<!-- HOME -->
+<div id="home" class="card section">
+    <h3>📊 لوحة التحكم</h3>
+    <p>مرحباً بك في النظام</p>
 </div>
 
-<!-- EXPENSES -->
-<div id="expenses" class="card section" style="display:none">
-    <h3>إضافة مصروف</h3>
+<!-- PROJECTS -->
+<div id="projects" class="card section" style="display:none">
+    <h3>🏗 المشاريع</h3>
 
-    <select id="projectSelect"></select>
-    <input id="amount" placeholder="المبلغ">
-    <input type="file" id="invoice">
+    <input placeholder="اسم المشروع">
+    <button>إضافة</button>
 
-    <button class="action" id="addExpenseBtn">رفع المصروف</button>
-
-    <h3>سجل المصروفات</h3>
     <table>
         <thead>
-        <tr>
-            <th>المشروع</th>
-            <th>المبلغ</th>
-            <th>فاتورة</th>
-        </tr>
+            <tr>
+                <th>اسم المشروع</th>
+                <th>مدير المشروع</th>
+            </tr>
         </thead>
-        <tbody id="expenseList"></tbody>
+        <tbody>
+            <tr>
+                <td>مثال</td>
+                <td>مدير</td>
+            </tr>
+        </tbody>
     </table>
 </div>
 
 <!-- USERS -->
 <div id="users" class="card section" style="display:none">
-    <h3>المستخدمين</h3>
+    <h3>👤 المستخدمين</h3>
+
     <input placeholder="الإيميل">
-    <input placeholder="الصلاحية">
-    <button class="action">إضافة مستخدم</button>
+    <select>
+        <option>سوبر أدمن</option>
+        <option>مدير مشروع</option>
+    </select>
+    <button>إضافة مستخدم</button>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="card section" style="display:none">
+    <h3>⚙️ الإعدادات (سوبر أدمن)</h3>
+    <p>هنا يتم التحكم الكامل بالنظام</p>
 </div>
 
 </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "PUT-YOUR-KEY",
-  authDomain: "PUT",
-  projectId: "PUT",
-  storageBucket: "PUT",
-  messagingSenderId: "PUT",
-  appId: "PUT"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-/* NAV */
-window.show = (id)=>{
+<script>
+function show(id){
     document.querySelectorAll('.section').forEach(s=>s.style.display='none');
     document.getElementById(id).style.display='block';
 }
-
-/* ELEMENTS */
-const pName = document.getElementById("pName");
-const pCity = document.getElementById("pCity");
-const pArea = document.getElementById("pArea");
-const pVillage = document.getElementById("pVillage");
-const pManager = document.getElementById("pManager");
-
-const projectsList = document.getElementById("projectsList");
-const projectSelect = document.getElementById("projectSelect");
-const amount = document.getElementById("amount");
-const invoice = document.getElementById("invoice");
-const expenseList = document.getElementById("expenseList");
-
-/* LOAD */
-document.addEventListener("DOMContentLoaded", ()=>{
-    loadProjects();
-    loadExpenses();
-});
-
-/* ADD PROJECT */
-document.getElementById("addProjectBtn").onclick = async ()=>{
-    await addDoc(collection(db,"projects"),{
-        name: pName.value,
-        city: pCity.value,
-        area: pArea.value,
-        village: pVillage.value,
-        manager: pManager.value
-    });
-
-    loadProjects();
-}
-
-/* LOAD PROJECTS */
-async function loadProjects(){
-    projectsList.innerHTML="";
-    projectSelect.innerHTML="";
-
-    const snap = await getDocs(collection(db,"projects"));
-
-    snap.forEach(doc=>{
-        const d = doc.data();
-
-        projectsList.innerHTML += `
-        <tr>
-            <td>${d.name}</td>
-            <td>${d.manager}</td>
-        </tr>`;
-
-        projectSelect.innerHTML += `<option>${d.name}</option>`;
-    });
-}
-
-/* ADD EXPENSE */
-document.getElementById("addExpenseBtn").onclick = async ()=>{
-    const fileName = invoice.files[0]?.name || "no-image";
-
-    await addDoc(collection(db,"expenses"),{
-        project: projectSelect.value,
-        amount: amount.value,
-        invoice: fileName
-    });
-
-    loadExpenses();
-}
-
-/* LOAD EXPENSES */
-async function loadExpenses(){
-    expenseList.innerHTML="";
-
-    const snap = await getDocs(collection(db,"expenses"));
-
-    snap.forEach(doc=>{
-        const d = doc.data();
-
-        expenseList.innerHTML += `
-        <tr>
-            <td>${d.project}</td>
-            <td>${d.amount}</td>
-            <td>${d.invoice}</td>
-        </tr>`;
-    });
-}
-
 </script>
 
 </body>
