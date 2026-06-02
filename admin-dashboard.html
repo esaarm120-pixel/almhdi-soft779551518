@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم المدير</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
         .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -17,7 +20,7 @@
 
     <div class="container">
         <h1>⚙️ لوحة تحكم السوبر أدمن</h1>
-        <button class="btn-back" onclick="window.location.href='dashboard.html'">العودة للوحة الرئيسية</button>
+        <button class="btn-back" onclick="window.location.href='index.html'">تسجيل الخروج والعودة</button>
 
         <table id="users-table">
             <thead>
@@ -33,34 +36,84 @@
         </table>
     </div>
 
-    <script type="module">
-        import { isSuperAdmin } from "./js/auth-system.js";
-        import { userManagementService } from "./js/auth-service.js";
+    <script>
+        // ⚙️ تهيئة الفايربيس لربط اللوحة بقاعدة البيانات الخاصة بك مباشرة
+        const firebaseConfig = {
+            apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
+            authDomain: "almhdi-soft779551518.firebaseapp.com",
+            databaseURL: "https://almhdi-soft779551518-default-rtdb.firebaseio.com",
+            projectId: "almhdi-soft779551518",
+            storageBucket: "almhdi-soft779551518.appspot.com",
+            messagingSenderId: "386533839313",
+            appId: "1:386533839313:web:575bc9978c0e38ffd950f0",
+            measurementId: "G-MZSN60VZ63"
+        };
 
-        // 1. التأكد من صلاحية الدخول (الحماية)
-        if (!isSuperAdmin()) {
-            alert("❌ غير مصرح لك بالدخول!");
-            window.location.href = "dashboard.html";
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
+        const db = firebase.firestore();
 
-        // 2. تحميل البيانات
-        async function loadData() {
+        // 🛡️ 1. نظام الحماية والتحقق من هوية السوبر أدمن المخزنة بالهاتف
+        const localUser = localStorage.getItem('currentUser');
+        let isVerified = false;
+
+        if (localUser) {
             try {
-                const users = await userManagementService.getAllUsers();
-                const tbody = document.getElementById('users-body');
-                tbody.innerHTML = users.map(user => `
-                    <tr>
-                        <td>${user.displayName || '---'}</td>
-                        <td>${user.email}</td>
-                        <td><strong>${user.role}</strong></td>
-                    </tr>
-                `).join('');
-            } catch (err) {
-                console.error("خطأ في التحميل:", err);
+                const parsedUser = JSON.parse(localUser);
+                // التحقق من أن الدور هو سوبر أدمن بالشرطة السفلية كما هو بفايربيس
+                if (parsedUser && parsedUser.role === "super_admin") {
+                    isVerified = true;
+                }
+            } catch (e) {
+                isVerified = false;
             }
         }
 
-        loadData();
+        // إذا لم يكن سوبر أدمن، يتم طرده وحظر الصفحة عنه فوراً
+        if (!isVerified) {
+            alert("❌ غير مصرح لك بالدخول! هذه اللوحة مخصصة للسوبر أدمن فقط.");
+            window.location.href = "index.html";
+        }
+
+        // 📊 2. دالة جلب وتحميل بيانات جميع المستخدمين من الفايربيس لعرضها بالجدول
+        async function loadData() {
+            try {
+                const tbody = document.getElementById('users-body');
+                
+                // جلب مستندات المستخدمين من مجموعة "users"
+                const snapshot = await db.collection("users").get();
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">⚠️ لا يوجد مستخدمين مسجلين حالياً.</td></tr>`;
+                    return;
+                }
+
+                let rowsHtml = "";
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    rowsHtml += `
+                        <tr>
+                            <td>${user.firstName ? (user.firstName + ' ' + (user.lastName || '')) : (user.displayName || '---')}</td>
+                            <td>${user.email || '---'}</td>
+                            <td><strong style="color:#764ba2;">${user.role || '---'}</strong></td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = rowsHtml;
+
+            } catch (err) {
+                console.error("خطأ في تحميل بيانات المستخدمين:", err);
+                document.getElementById('users-body').innerHTML = `<tr><td colspan="3" style="color:red;">❌ خطأ في تحميل البيانات من السيرفر.</td></tr>`;
+            }
+        }
+
+        // تشغيل الدالة فور فتح الصفحة للمصرح لهم
+        if (isVerified) {
+            loadData();
+        }
     </script>
 </body>
 </html>
+ 
