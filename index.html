@@ -63,11 +63,11 @@
     import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // دالة التوجيه الذكي بعد التحقق من البيانات والصلاحيات
     function executeSmartDirection(userData) {
         const role = userData.role;
+        alert("🔄 جاري التوجيه إلى صفحة الـ رول: " + role);
         if (role === "super_admin") {
-            window.location.href = "super-admin.html"; // التوجيه لملف السوبر أدمن بالشرطة الوسطى
+            window.location.href = "super-admin.html";
         } else if (role === "project_admin") {
             window.location.href = "dashboard.html";
         } else {
@@ -75,13 +75,12 @@
         }
     }
 
-    // التحقق التلقائي المحدث عند فتح الصفحة
+    // التحقق التلقائي
     const localUser = localStorage.getItem('currentUser');
     if (localUser) {
         try {
             const parsedUser = JSON.parse(localUser);
             if (parsedUser && parsedUser.uid) {
-                console.log('✅ المستخدم مسجل دخول بالفعل، جاري التوجيه تلقائياً...');
                 executeSmartDirection(parsedUser);
             }
         } catch (e) {
@@ -103,18 +102,22 @@
         loginBtn.textContent = '⏳ جاري المعالجة...';
 
         try {
-            console.log('🔐 جاري محاولة تسجيل الدخول...');
+            // 1️⃣ خطوة الـ Auth
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const userId = userCredential.user.uid;
             
-            console.log('🔍 جاري سحب بيانات المستخدم من Firestore...');
+            alert("🔒 خطوة 1 نجحت: تم التحقق من الحساب في Auth بنجاح!");
+
+            // 2️⃣ خطوة الـ Firestore
             const userDoc = await getDoc(doc(db, "users", userId));
             
             if (userDoc.exists()) {
                 const userData = userDoc.data();
                 
+                alert("📂 خطوة 2 نجحت: تم العثور على بيانات المستخدم في Firestore. الرول هو: " + userData.role);
+
                 if (userData.status !== "active") {
-                    throw { code: "custom/inactive-account", message: "هذا الحساب معطل حالياً، يرجى مراجعة الإدارة" };
+                    throw { code: "custom/inactive-account", message: "هذا الحساب معطل حالياً" };
                 }
 
                 const sessionData = {
@@ -126,28 +129,20 @@
                 };
                 
                 localStorage.setItem('currentUser', JSON.stringify(sessionData));
-                console.log('💾 تم حفظ جلسة المستخدم بنجاح.');
                 
-                successDiv.textContent = `✅ مرحباً بك ${sessionData.displayName || 'يا مستخدم'}!`;
-                successDiv.style.display = 'block';
-                
-                setTimeout(() => {
-                    executeSmartDirection(sessionData);
-                }, 1000);
+                executeSmartDirection(sessionData);
             } else {
-                throw { code: "custom/user-not-found", message: "بيانات المستخدم غير مسجلة في قاعدة البيانات" };
+                throw { code: "custom/user-not-found", message: "المستخدم غير مسجل في مستندات Firestore" };
             }
             
         } catch (error) {
-            console.error('❌ خطأ في تسجيل الدخول:', error.code, error.message);
-            const errorMessage = errorMessages[error.code] || error.message || "فشل تسجيل الدخول";
-            errorDiv.textContent = `❌ ${errorMessage}`;
+            alert("❌ حدث خطأ أثناء الدخول: " + (error.message || error.code));
+            errorDiv.textContent = `❌ ${error.message || error.code}`;
             errorDiv.style.display = 'block';
             loginBtn.disabled = false;
             loginBtn.textContent = '🔓 تسجيل الدخول';
         }
     };
 </script>
-
 </body>
 </html>
