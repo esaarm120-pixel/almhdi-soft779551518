@@ -67,7 +67,7 @@
     function executeSmartDirection(userData) {
         const role = userData.role;
         if (role === "super_admin") {
-            window.location.href = "super-admin.html";
+            window.location.href = "super-admin.html"; // التوجيه لملف السوبر أدمن بالشرطة الوسطى
         } else if (role === "project_admin") {
             window.location.href = "dashboard.html";
         } else {
@@ -104,12 +104,10 @@
 
         try {
             console.log('🔐 جاري محاولة تسجيل الدخول...');
-            // 1️⃣ تسجيل الدخول باستخدام البريد وكلمة المرور
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const userId = userCredential.user.uid;
             
-            console.log('🔍 جاري سحب بيانات المستخدم من Firestore لربط المشروع...');
-            // 2️⃣ جلب مستند المستخدم من Firestore لقراءة الـ role والـ projectId المخزن تلقائياً
+            console.log('🔍 جاري سحب بيانات المستخدم من Firestore...');
             const userDoc = await getDoc(doc(db, "users", userId));
             
             if (userDoc.exists()) {
@@ -119,22 +117,20 @@
                     throw { code: "custom/inactive-account", message: "هذا الحساب معطل حالياً، يرجى مراجعة الإدارة" };
                 }
 
-                // 3️⃣ تخزين بيانات الهوية والمشروع الموحدة في الـ localStorage لتستفيد منها بقية الصفحات لعزل بياناتها
                 const sessionData = {
                     uid: userId,
                     email: userData.email,
                     role: userData.role,
-                    projectId: userData.projectId || null, // كود المشروع المرتبط تلقائياً
+                    projectId: userData.projectId || null, 
                     displayName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim()
                 };
                 
                 localStorage.setItem('currentUser', JSON.stringify(sessionData));
-                console.log('💾 تم حفظ جلسة المستخدم وكود المشروع بنجاح:', sessionData.projectId);
+                console.log('💾 تم حفظ جلسة المستخدم بنجاح.');
                 
                 successDiv.textContent = `✅ مرحباً بك ${sessionData.displayName || 'يا مستخدم'}!`;
                 successDiv.style.display = 'block';
                 
-                console.log('🔄 جاري التوجيه الذكي لوجهة المستخدم...');
                 setTimeout(() => {
                     executeSmartDirection(sessionData);
                 }, 1000);
