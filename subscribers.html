@@ -1,3 +1,5 @@
+// subscribers.html أو ملف السيرفس المخصص للمشتركين بداخل subscribers.html 
+
 import { db } from "../config/firebase-config.js";
 import { 
     collection, 
@@ -6,6 +8,7 @@ import {
     where, 
     doc, 
     getDoc, 
+    setDoc,
     deleteDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -19,28 +22,41 @@ export const subscriberService = {
         }
 
         const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
+        let userSnap = await getDoc(userRef);
+        let userData;
 
         if (!userSnap.exists()) {
-            throw new Error("المستخدم غير موجود في قاعدة البيانات");
+            console.log("تفقد المشتركين: المستند مفقود بـ UID، جاري التوليف والمطابقة عبر البريد الإلكتروني للمستخدم...");
+            const emailQuery = query(collection(db, "users"), where("email", "==", user.email || ""));
+            const querySnap = await getDocs(emailQuery);
+            if (!querySnap.empty) {
+                const originalDoc = querySnap.docs[0];
+                userData = originalDoc.data();
+                await setDoc(doc(db, "users", user.uid), {
+                    ...userData,
+                    updatedFromRandomId: originalDoc.id
+                });
+                userSnap = await getDoc(userRef);
+            } else {
+                throw new Error("المستخدم غير موجود في قاعدة البيانات");
+            }
         }
 
-        const userData = userSnap.data();
-
+        userData = userSnap.data();
         let q;
-
         const role = (userData.role || "").toLowerCase();
 
         if (role === "super_admin") {
             q = collection(db, "subscribers");
         } else {
-            if (!user.projectId) {
+            const projId = userData.projectId || user.projectId;
+            if (!projId) {
                 throw new Error("projectId غير موجود في المستخدم");
             }
 
             q = query(
                 collection(db, "subscribers"),
-                where("projectId", "==", user.projectId)
+                where("projectId", "==", projId)
             );
         }
 
