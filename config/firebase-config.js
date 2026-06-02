@@ -1,4 +1,9 @@
-// إعدادات Firebase
+// استيراد مكتبات Firebase اللازمة للتهيئة والتصدير
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// إعدادات Firebase الخاصة بمشروعك
 export const firebaseConfig = {
     apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
     authDomain: "almhdi-soft779551518.firebaseapp.com",
@@ -9,6 +14,11 @@ export const firebaseConfig = {
     appId: "1:386533839313:web:575bc9978c0e38ffd950f0",
     measurementId: "G-MZSN60VZ63"
 };
+
+// تهيئة الخدمة وتصدير المتغيرات المطلوبة للربط التلقائي في الصفحات الأخرى
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
 // رسائل الأخطاء بالعربية
 export const errorMessages = {
