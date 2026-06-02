@@ -2,36 +2,39 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم</title>
 <style>
-:root { --primary: #004a99; --bg: #f0f2f5; --card: #ffffff; }
+:root { --primary: #004a99; --bg: #f4f7f9; --card: #ffffff; --text: #333; }
 body { margin: 0; padding: 10px; background: var(--bg); font-family: sans-serif; }
 
-.header { background: var(--primary); padding: 15px; border-radius: 15px; color: white; margin-bottom: 10px; }
-.header-input { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px; border-radius: 5px; width: 100%; cursor: not-allowed; }
+.header { background: var(--primary); padding: 15px; color: white; border-radius: 15px; margin-bottom: 10px; }
+.header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.input-group { display: flex; flex-direction: column; gap: 2px; }
+.header-input { background: rgba(255,255,255,0.15); border: none; color: white; padding: 5px; border-radius: 5px; cursor: not-allowed; font-size: 13px; }
 
-.signature { background: var(--card); padding: 10px; border-radius: 10px; overflow: hidden; white-space: nowrap; border: 1px solid #ddd; margin-bottom: 10px; }
+.signature { background: var(--card); padding: 10px; border-radius: 10px; border: 1px solid #ddd; overflow: hidden; margin-bottom: 10px; }
 .marquee { display: inline-block; animation: move 15s linear infinite; color: var(--primary); font-weight: bold; }
-/* اتجاه الحركة من اليمين إلى اليسار */
-@keyframes move { 0% { transform: translateX(0%); } 100% { transform: translateX(-100%); } }
+@keyframes move { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
 .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .card { background: var(--card); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #eee; }
+.card h4 { margin: 0; font-size: 12px; color: #666; }
+.card span { display: block; font-size: 18px; font-weight: bold; color: var(--primary); margin-top: 5px; }
 </style>
 </head>
 <body>
 
 <div class="header">
-    <div style="display: flex; justify-content: space-between;">
-        <strong>لوحة التحكم</strong>
+    <div class="header-top">
+        <strong>مشروع مياه بني الحارث</strong>
         <div onclick="location.href='settings.html'">⚙️</div>
     </div>
-    <label style="font-size: 12px;">اسم المشروع</label>
-    <input type="text" id="projectNameInput" class="header-input" readonly>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
-        <div><label style="font-size: 12px;">المحافظة</label><input type="text" id="governorateNameInput" class="header-input" readonly></div>
-        <div><label style="font-size: 12px;">المديرية</label><input type="text" id="districtNameInput" class="header-input" readonly></div>
-        <div><label style="font-size: 12px;">القرية</label><input type="text" id="villageNameInput" class="header-input" readonly></div>
-        <div><label style="font-size: 12px;">المدير</label><input type="text" id="managerNameInput" class="header-input" readonly></div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="input-group"><label style="font-size:10px;">المحافظة</label><input type="text" id="governorateNameInput" class="header-input" readonly></div>
+        <div class="input-group"><label style="font-size:10px;">المديرية</label><input type="text" id="districtNameInput" class="header-input" readonly></div>
+        <div class="input-group"><label style="font-size:10px;">القرية</label><input type="text" id="villageNameInput" class="header-input" readonly></div>
+        <div class="input-group"><label style="font-size:10px;">المدير</label><input type="text" id="managerNameInput" class="header-input" readonly></div>
     </div>
 </div>
 
@@ -42,25 +45,44 @@ body { margin: 0; padding: 10px; background: var(--bg); font-family: sans-serif;
 <div class="dashboard">
     <div class="card"><h4>👥 المشتركين</h4><span id="subsCount">0</span></div>
     <div class="card"><h4>🧾 الفواتير</h4><span id="pendingBills">0</span></div>
+    <div class="card"><h4>💰 الصندوق</h4><span id="cashBalance">0</span></div>
+    <div class="card"><h4>🏦 التحويل</h4><span id="transferBalance">0</span></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
-    
-    // إعداداتك كما هي..
-    const firebaseConfig = { /* انسخ إعداداتك القديمة هنا */ };
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
+        authDomain: "almhdi-soft779551518.firebaseapp.com",
+        databaseURL: "https://almhdi-soft779551518-default-rtdb.firebaseio.com",
+        projectId: "almhdi-soft779551518",
+        storageBucket: "almhdi-soft779551518.appspot.com",
+        messagingSenderId: "386533839313",
+        appId: "1:386533839313:web:575bc9978c0e38ffd950f0",
+        measurementId: "G-MZSN60VZ63"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // جلب البيانات مع وضع القيمة في الحقول (المحمية بـ readonly)
-    const fields = ['projectName', 'village', 'manager', 'district', 'governorate'];
-    fields.forEach(f => {
-        onValue(ref(db, 'settings/'+f), s => {
-            const el = document.getElementById(f+'Input');
-            if(el) el.value = s.val() || "";
-        });
+    // ربط البيانات
+    const paths = { 
+        'villageNameInput': 'settings/village', 
+        'managerNameInput': 'settings/manager', 
+        'districtNameInput': 'settings/district', 
+        'governorateNameInput': 'settings/governorate' 
+    };
+
+    Object.keys(paths).forEach(id => {
+        onValue(ref(db, paths[id]), s => { document.getElementById(id).value = s.val() || ""; });
     });
+
+    onValue(ref(db,'stats/subscribers'), s => { document.getElementById('subsCount').innerText = s.val() || 0; });
+    onValue(ref(db,'stats/pendingBills'), s => { document.getElementById('pendingBills').innerText = s.val() || 0; });
+    onValue(ref(db,'cashBox'), s => { document.getElementById('cashBalance').innerText = s.val() || 0; });
+    onValue(ref(db,'transferBox'), s => { document.getElementById('transferBalance').innerText = s.val() || 0; });
 </script>
 </body>
 </html>
