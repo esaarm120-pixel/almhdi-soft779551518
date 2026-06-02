@@ -354,19 +354,11 @@
 
             signupBtn.disabled = true;
 
+            // 1️⃣ إنشاء حساب المستخدم في الـ Authentication للحصول على الـ UID أولاً
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const userId = userCredential.user.uid;
 
-            await setDoc(doc(db, "users", userId), {
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
-                phone: phone,
-                role: "project_admin",
-                createdAt: new Date().toISOString(),
-                status: "active"
-            });
-
+            // 2️⃣ إنشاء المشروع أولاً في نظام المشاريع لكي نتمكن من الحصول على الـ projectId المولد تلقائياً
             const projectResult = await createProject(db, {
                 name: projectName,
                 governorate: governorate,
@@ -379,8 +371,24 @@
                 subscriptionFee: subscriptionFee
             });
 
+            // 3️⃣ التحقق من نجاح إنشاء المشروع لربط البيانات بشكل صحيح بدون تشتت
             if (projectResult.success) {
-                await setDoc(doc(db, `projects/${projectResult.projectId}/members/${userId}`), {
+                const generatedProjectId = projectResult.projectId;
+
+                // 4️⃣ حفظ بيانات حساب المستخدم مع إضافة الـ projectId الجديد لربطهما تلقائياً 
+                await setDoc(doc(db, "users", userId), {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    phone: phone,
+                    role: "project_admin",
+                    projectId: generatedProjectId, // 🔗 الربط التلقائي هنا
+                    createdAt: new Date().toISOString(),
+                    status: "active"
+                });
+
+                // 5️⃣ إضافة المستخدم كعضو إداري داخل مجموعة أعضاء المشروع نفسه
+                await setDoc(doc(db, `projects/${generatedProjectId}/members/${userId}`), {
                     userId: userId,
                     name: `${firstName} ${lastName}`,
                     email: email,
@@ -388,12 +396,14 @@
                     joinedAt: new Date().toISOString()
                 });
 
-                successDiv.textContent = '✅ تم إنشاء الحساب بنجاح! جاري التوجيه...';
+                successDiv.textContent = '✅ تم إنشاء الحساب والمشروع وربطهما تلقائياً! جاري التوجيه...';
                 successDiv.style.display = 'block';
 
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 2000);
+            } else {
+                throw new Error('فشل إنشاء المشروع، يرجى المحاولة مرة أخرى');
             }
         } catch (error) {
             const msg = errorMessages[error.code] || error.message;
