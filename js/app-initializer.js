@@ -1,5 +1,5 @@
-// js/app-initializer.js
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// js/app-initializer.js (AUTO-HEALING STABLE VERSION)
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from "../config/firebase-config.js";
 
 export async function initializeApp() {
@@ -13,26 +13,44 @@ export async function initializeApp() {
 
     try {
         // 1. جلب بيانات المستخدم من مجموعة 'users' للتحقق من صلاحياته
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
+        let userDoc = await getDoc(doc(db, "users", user.uid));
+        let userData;
+
+        if (!userDoc.exists) {
+            console.log("أداة البدء: المستند مفقود بـ UID، تفقد البريد الإلكتروني للمطابقة الفورية...");
+            const emailQuery = query(collection(db, "users"), where("email", "==", user.email || ""));
+            const querySnap = await getDocs(emailQuery);
+            
+            if (!querySnap.empty) {
+                const originalDoc = querySnap.docs[0];
+                userData = originalDoc.data();
+                await setDoc(doc(db, "users", user.uid), {
+                    ...userData,
+                    updatedFromRandomId: originalDoc.id
+                });
+                userDoc = await getDoc(doc(db, "users", user.uid));
+            }
+        }
+
+        if (userDoc.exists) {
+            userData = userDoc.data();
 
             // 2. تفعيل صلاحية السوبر أدمن (تجاوز قيود المشاريع)
             if (userData.role === 'super_admin') {
-                console.log("أهلاً بك يا عصام المهدي، تم تفعيل وضع السوبر أدمن.");
+                console.log("أهلاً بك يا عصام المهدي، تم تفعيل وضع السوبر أدمن الصلاحياتي.");
                 return; // خروج من الدالة لأنك تملك صلاحية كاملة
             }
         }
 
         // 3. كود التحقق من المشاريع للمستخدمين العاديين
-        if (!user.projectId) {
+        const currentProject = userData && userData.projectId ? userData.projectId : (user.projectId || null);
+        if (!currentProject) {
             console.warn("لا يوجد مشروع مرتبط بهذا المستخدم");
             return;
         }
 
-        const projectDoc = await getDoc(doc(db, "projects", user.projectId));
-        if (projectDoc.exists()) {
+        const projectDoc = await getDoc(doc(db, "projects", currentProject));
+        if (projectDoc.exists) {
             const projectData = projectDoc.data();
             
             // نظام الإيقاف (Kill Switch) للمشاريع
@@ -41,7 +59,7 @@ export async function initializeApp() {
             }
         }
     } catch (error) {
-        console.error("خطأ في التحقق من حالة الصلاحيات:", error);
+        console.error("خطأ في التحقق من حالة الصلاحيات عند بدء التطبيق:", error);
     }
 }
 
