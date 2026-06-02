@@ -2,102 +2,65 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة التحكم</title>
 <style>
-:root {
-    --primary: #004a99;
-    --bg: #f0f2f5;
-    --card: #ffffff;
-    --text: #333;
-    --accent: #00e676;
-}
-body { margin: 0; padding: 10px; background: var(--bg); color: var(--text); font-family: sans-serif; }
+:root { --primary: #004a99; --bg: #f0f2f5; --card: #ffffff; }
+body { margin: 0; padding: 10px; background: var(--bg); font-family: sans-serif; }
 
-/* الترويسة */
 .header { background: var(--primary); padding: 15px; border-radius: 15px; color: white; margin-bottom: 10px; }
-.header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.input-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
-.input-group label { font-size: 12px; opacity: 0.9; }
-.header-input { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px; border-radius: 8px; width: 100%; box-sizing: border-box; }
+.header-input { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px; border-radius: 5px; width: 100%; cursor: not-allowed; }
 
-/* التوقيع المتحرك */
-.signature { background: var(--card); padding: 10px; border-radius: 10px; margin-bottom: 10px; overflow: hidden; white-space: nowrap; border: 1px solid #ddd; }
-.marquee { display: inline-block; white-space: nowrap; animation: move 15s linear infinite; color: var(--primary); font-weight: bold; }
-@keyframes move { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+.signature { background: var(--card); padding: 10px; border-radius: 10px; overflow: hidden; white-space: nowrap; border: 1px solid #ddd; margin-bottom: 10px; }
+.marquee { display: inline-block; animation: move 15s linear infinite; color: var(--primary); font-weight: bold; }
+/* اتجاه الحركة من اليمين إلى اليسار */
+@keyframes move { 0% { transform: translateX(0%); } 100% { transform: translateX(-100%); } }
 
-/* البطاقات */
 .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .card { background: var(--card); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #eee; }
-.card h4 { margin: 0; font-size: 11px; color: #666; }
-.card span { display: block; font-size: 18px; font-weight: bold; color: var(--primary); margin-top: 5px; }
-
-/* الأزرار */
-.btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: none; background: var(--primary); color: white; cursor: pointer; }
 </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="header-top">
+    <div style="display: flex; justify-content: space-between;">
         <strong>لوحة التحكم</strong>
         <div onclick="location.href='settings.html'">⚙️</div>
     </div>
-    <div class="input-group">
-        <label>اسم المشروع</label>
-        <input type="text" id="projectNameInput" class="header-input">
-    </div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div class="input-group"><label>المحافظة</label><input type="text" id="governorateNameInput" class="header-input"></div>
-        <div class="input-group"><label>المديرية</label><input type="text" id="districtNameInput" class="header-input"></div>
-        <div class="input-group"><label>القرية</label><input type="text" id="villageNameInput" class="header-input"></div>
-        <div class="input-group"><label>المدير</label><input type="text" id="managerNameInput" class="header-input"></div>
+    <label style="font-size: 12px;">اسم المشروع</label>
+    <input type="text" id="projectNameInput" class="header-input" readonly>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
+        <div><label style="font-size: 12px;">المحافظة</label><input type="text" id="governorateNameInput" class="header-input" readonly></div>
+        <div><label style="font-size: 12px;">المديرية</label><input type="text" id="districtNameInput" class="header-input" readonly></div>
+        <div><label style="font-size: 12px;">القرية</label><input type="text" id="villageNameInput" class="header-input" readonly></div>
+        <div><label style="font-size: 12px;">المدير</label><input type="text" id="managerNameInput" class="header-input" readonly></div>
     </div>
 </div>
 
 <div class="signature">
-    <div class="marquee">برمجة وتطوير عصام المهدي 779551518 ✦ اذكر الله وصل على النبي ﷺ</div>
+    <div class="marquee">✨ برمجة وتطوير عصام المهدي 779551518 ✦ اذكر الله وصل على النبي ﷺ ✨</div>
 </div>
 
 <div class="dashboard">
     <div class="card"><h4>👥 المشتركين</h4><span id="subsCount">0</span></div>
     <div class="card"><h4>🧾 الفواتير</h4><span id="pendingBills">0</span></div>
-    <div class="card"><h4>💰 الصندوق</h4><span id="cashBalance">0</span></div>
-    <div class="card"><h4>🏦 التحويل</h4><span id="transferBalance">0</span></div>
 </div>
-
-<button class="btn" onclick="location.href='subscribers.html'">الدخول للنظام</button>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
-        authDomain: "almhdi-soft779551518.firebaseapp.com",
-        databaseURL: "https://almhdi-soft779551518-default-rtdb.firebaseio.com",
-        projectId: "almhdi-soft779551518",
-        storageBucket: "almhdi-soft779551518.appspot.com",
-        messagingSenderId: "386533839313",
-        appId: "1:386533839313:web:575bc9978c0e38ffd950f0",
-        measurementId: "G-MZSN60VZ63"
-    };
-
+    
+    // إعداداتك كما هي..
+    const firebaseConfig = { /* انسخ إعداداتك القديمة هنا */ };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // ربط الحقول
-    onValue(ref(db,'settings/projectName'), s => { document.getElementById('projectNameInput').value = s.val() || ""; });
-    onValue(ref(db,'settings/village'), s => { document.getElementById('villageNameInput').value = s.val() || ""; });
-    onValue(ref(db,'settings/manager'), s => { document.getElementById('managerNameInput').value = s.val() || ""; });
-    onValue(ref(db,'settings/district'), s => { document.getElementById('districtNameInput').value = s.val() || ""; });
-    onValue(ref(db,'settings/governorate'), s => { document.getElementById('governorateNameInput').value = s.val() || ""; });
-    
-    // ربط الإحصائيات (تأكد من مطابقة الـ IDs إذا تغيرت في صفحتك)
-    onValue(ref(db,'stats/subscribers'), s => { document.getElementById('subsCount').innerText = s.val() || 0; });
-    onValue(ref(db,'stats/pendingBills'), s => { document.getElementById('pendingBills').innerText = s.val() || 0; });
-    onValue(ref(db,'cashBox'), s => { document.getElementById('cashBalance').innerText = s.val() || 0; });
-    onValue(ref(db,'transferBox'), s => { document.getElementById('transferBalance').innerText = s.val() || 0; });
+    // جلب البيانات مع وضع القيمة في الحقول (المحمية بـ readonly)
+    const fields = ['projectName', 'village', 'manager', 'district', 'governorate'];
+    fields.forEach(f => {
+        onValue(ref(db, 'settings/'+f), s => {
+            const el = document.getElementById(f+'Input');
+            if(el) el.value = s.val() || "";
+        });
+    });
 </script>
 </body>
 </html>
