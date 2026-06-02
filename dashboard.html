@@ -1,88 +1,301 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم الكاملة</title>
-    <style>
-        :root { --primary: #004a99; --bg: #f4f7f9; --card: #ffffff; --text: #333; }
-        body { margin: 0; padding: 10px; background: var(--bg); font-family: sans-serif; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>نظام إدارة المشاريع</title>
 
-        /* الترويسة */
-        .header { background: var(--primary); padding: 15px; color: white; border-radius: 15px; margin-bottom: 10px; }
-        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .header-input { background: rgba(255,255,255,0.15); border: none; color: white; padding: 6px; border-radius: 5px; cursor: not-allowed; width: 100%; box-sizing: border-box; }
-        
-        /* التوقيع - حركة من اليسار لليمين */
-        .signature { background: var(--card); padding: 10px; border-radius: 10px; border: 1px solid #ddd; overflow: hidden; margin-bottom: 10px; }
-        .marquee { display: inline-block; animation: move 15s linear infinite; color: var(--primary); font-weight: bold; white-space: nowrap; }
-        @keyframes move { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+<style>
+body{
+    margin:0;
+    font-family: Arial;
+    background:#f3f6f9;
+}
 
-        /* البطاقات */
-        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .card { background: var(--card); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #eee; }
-        .card span { display: block; font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 5px; }
-        
-        /* العمليات السريعة */
-        .quick-actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
-        .action-btn { background: var(--card); padding: 8px; border-radius: 10px; text-align: center; font-size: 10px; border: 1px solid #eee; }
-    </style>
+header{
+    background:#0f172a;
+    color:white;
+    padding:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.marquee{
+    background:#111827;
+    color:#facc15;
+    padding:8px;
+    white-space:nowrap;
+    overflow:hidden;
+}
+
+.marquee span{
+    display:inline-block;
+    padding-left:100%;
+    animation: move 12s linear infinite;
+}
+
+@keyframes move{
+    0%{transform:translateX(0)}
+    100%{transform:translateX(-100%)}
+}
+
+.container{
+    display:grid;
+    grid-template-columns:250px 1fr;
+    height:calc(100vh - 100px);
+}
+
+.sidebar{
+    background:#1e293b;
+    color:white;
+    padding:10px;
+}
+
+.sidebar button{
+    width:100%;
+    margin:5px 0;
+    padding:10px;
+    border:none;
+    cursor:pointer;
+    background:#334155;
+    color:white;
+}
+
+.sidebar button:hover{background:#475569;}
+
+.main{padding:20px; overflow:auto;}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+input, select{
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+}
+
+button.action{
+    background:#16a34a;
+    color:white;
+    padding:10px;
+    border:none;
+    width:100%;
+    cursor:pointer;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+table th, table td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
+
+table th{
+    background:#0f172a;
+    color:white;
+}
+</style>
 </head>
+
 <body>
 
-<div class="header">
-    <div style="display:flex; justify-content:space-between;"><strong>مشروع مياه بني الحارث</strong> <span onclick="location.href='settings.html'">⚙️</span></div>
-    <div class="header-grid">
-        <div><small>المحافظة</small><input type="text" id="governorateNameInput" class="header-input" readonly></div>
-        <div><small>المديرية</small><input type="text" id="districtNameInput" class="header-input" readonly></div>
-        <div><small>القرية</small><input type="text" id="villageNameInput" class="header-input" readonly></div>
-        <div><small>المدير</small><input type="text" id="managerNameInput" class="header-input" readonly></div>
-    </div>
+<header>
+    <h2>📊 لوحة إدارة المشاريع</h2>
+    <div>Super Admin</div>
+</header>
+
+<div class="marquee">
+<span>برمجة وتطوير عصام المهدي 779551518 - اذكر الله وصل على النبي 🤍</span>
 </div>
 
-<div class="signature">
-    <div class="marquee">✨ برمجة وتطوير عصام المهدي 779551518 ✦ اذكر الله وصل على النبي ﷺ ✨</div>
+<div class="container">
+
+<div class="sidebar">
+    <button onclick="show('projects')">المشاريع</button>
+    <button onclick="show('expenses')">المصروفات</button>
+    <button onclick="show('users')">المستخدمين</button>
 </div>
 
-<div class="dashboard">
-    <div class="card"><h4>المشتركين</h4><span id="subsCount">0</span></div>
-    <div class="card"><h4>الفواتير</h4><span id="pendingBills">0</span></div>
-    <div class="card"><h4>سندات قبض</h4><span id="receipts">0</span></div>
+<div class="main">
+
+<!-- PROJECTS -->
+<div id="projects" class="card section">
+    <h3>إضافة مشروع</h3>
+    <input id="pName" placeholder="اسم المشروع">
+    <input id="pCity" placeholder="المحافظة">
+    <input id="pArea" placeholder="المديرية">
+    <input id="pVillage" placeholder="القرية">
+    <input id="pManager" placeholder="اسم مدير المشروع">
+    <button class="action" id="addProjectBtn">إضافة</button>
+
+    <h3>قائمة المشاريع</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>اسم</th>
+            <th>مدير</th>
+        </tr>
+        </thead>
+        <tbody id="projectsList"></tbody>
+    </table>
 </div>
 
-<div class="quick-actions">
-    <div class="action-btn">💧<br>قراءة</div>
-    <div class="action-btn">📉<br>مصروف</div>
-    <div class="action-btn">📥<br>قبض</div>
-    <div class="action-btn">👥<br>مشترك</div>
-    <div class="action-btn">🏦<br>صندوق</div>
+<!-- EXPENSES -->
+<div id="expenses" class="card section" style="display:none">
+    <h3>إضافة مصروف</h3>
+
+    <select id="projectSelect"></select>
+    <input id="amount" placeholder="المبلغ">
+    <input type="file" id="invoice">
+
+    <button class="action" id="addExpenseBtn">رفع المصروف</button>
+
+    <h3>سجل المصروفات</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>المشروع</th>
+            <th>المبلغ</th>
+            <th>فاتورة</th>
+        </tr>
+        </thead>
+        <tbody id="expenseList"></tbody>
+    </table>
+</div>
+
+<!-- USERS -->
+<div id="users" class="card section" style="display:none">
+    <h3>المستخدمين</h3>
+    <input placeholder="الإيميل">
+    <input placeholder="الصلاحية">
+    <button class="action">إضافة مستخدم</button>
+</div>
+
+</div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
-        authDomain: "almhdi-soft779551518.firebaseapp.com",
-        databaseURL: "https://almhdi-soft779551518-default-rtdb.firebaseio.com",
-        projectId: "almhdi-soft779551518",
-        storageBucket: "almhdi-soft779551518.appspot.com",
-        messagingSenderId: "386533839313",
-        appId: "1:386533839313:web:575bc9978c0e38ffd950f0",
-        measurementId: "G-MZSN60VZ63"
-    };
+const firebaseConfig = {
+  apiKey: "PUT-YOUR-KEY",
+  authDomain: "PUT",
+  projectId: "PUT",
+  storageBucket: "PUT",
+  messagingSenderId: "PUT",
+  appId: "PUT"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    // ربط البيانات
-    const inputs = { 'villageNameInput': 'settings/village', 'managerNameInput': 'settings/manager', 'districtNameInput': 'settings/district', 'governorateNameInput': 'settings/governorate' };
-    Object.keys(inputs).forEach(id => { onValue(ref(db, inputs[id]), s => { document.getElementById(id).value = s.val() || ""; }); });
-    
-    onValue(ref(db,'stats/subscribers'), s => { document.getElementById('subsCount').innerText = s.val() || 0; });
-    onValue(ref(db,'stats/pendingBills'), s => { document.getElementById('pendingBills').innerText = s.val() || 0; });
+/* NAV */
+window.show = (id)=>{
+    document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+    document.getElementById(id).style.display='block';
+}
+
+/* ELEMENTS */
+const pName = document.getElementById("pName");
+const pCity = document.getElementById("pCity");
+const pArea = document.getElementById("pArea");
+const pVillage = document.getElementById("pVillage");
+const pManager = document.getElementById("pManager");
+
+const projectsList = document.getElementById("projectsList");
+const projectSelect = document.getElementById("projectSelect");
+const amount = document.getElementById("amount");
+const invoice = document.getElementById("invoice");
+const expenseList = document.getElementById("expenseList");
+
+/* LOAD */
+document.addEventListener("DOMContentLoaded", ()=>{
+    loadProjects();
+    loadExpenses();
+});
+
+/* ADD PROJECT */
+document.getElementById("addProjectBtn").onclick = async ()=>{
+    await addDoc(collection(db,"projects"),{
+        name: pName.value,
+        city: pCity.value,
+        area: pArea.value,
+        village: pVillage.value,
+        manager: pManager.value
+    });
+
+    loadProjects();
+}
+
+/* LOAD PROJECTS */
+async function loadProjects(){
+    projectsList.innerHTML="";
+    projectSelect.innerHTML="";
+
+    const snap = await getDocs(collection(db,"projects"));
+
+    snap.forEach(doc=>{
+        const d = doc.data();
+
+        projectsList.innerHTML += `
+        <tr>
+            <td>${d.name}</td>
+            <td>${d.manager}</td>
+        </tr>`;
+
+        projectSelect.innerHTML += `<option>${d.name}</option>`;
+    });
+}
+
+/* ADD EXPENSE */
+document.getElementById("addExpenseBtn").onclick = async ()=>{
+    const fileName = invoice.files[0]?.name || "no-image";
+
+    await addDoc(collection(db,"expenses"),{
+        project: projectSelect.value,
+        amount: amount.value,
+        invoice: fileName
+    });
+
+    loadExpenses();
+}
+
+/* LOAD EXPENSES */
+async function loadExpenses(){
+    expenseList.innerHTML="";
+
+    const snap = await getDocs(collection(db,"expenses"));
+
+    snap.forEach(doc=>{
+        const d = doc.data();
+
+        expenseList.innerHTML += `
+        <tr>
+            <td>${d.project}</td>
+            <td>${d.amount}</td>
+            <td>${d.invoice}</td>
+        </tr>`;
+    });
+}
+
 </script>
+
 </body>
 </html>
- 
