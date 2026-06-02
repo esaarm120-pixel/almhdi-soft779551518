@@ -41,18 +41,37 @@ align-items:center;
 font-size:18px;
 font-weight:bold;
 color:var(--main);
+display: flex;
+align-items: center;
+gap: 10px;
 }
 
 .header-info{
 font-size:13px;
 color:#aaa;
-margin-top:10px;
+margin-top:15px;
 line-height:1.7;
+display: flex;
+flex-wrap: wrap;
+gap: 15px;
 }
 
-.header-info span{
-color:white;
-font-weight:bold;
+/* ستايل حقول الترويسة */
+.header-input {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    width: 130px;
+    transition: 0.3s;
+}
+.header-input:focus {
+    outline: none;
+    border-color: var(--main);
+    background: rgba(0, 230, 118, 0.05);
 }
 
 /* ===== SIGNATURE (بين الترويسة والواجهة) ===== */
@@ -139,24 +158,33 @@ border-color:var(--main);
 
 <body>
 
-<!-- ===== HEADER ===== -->
 <div class="header">
 
-<div class="header-top">
-<div class="project-name" id="projectName">جارٍ التحميل...</div>
-<div onclick="location.href='settings.html'" style="cursor:pointer;font-size:22px;">⚙️</div>
+    <div class="header-top">
+        <div class="project-name">
+            مشروع مياه: 
+            <input type="text" id="projectNameInput" class="header-input" placeholder="اسم المشروع">
+        </div>
+        <div onclick="location.href='settings.html'" style="cursor:pointer;font-size:22px;">⚙️</div>
+    </div>
+
+    <div class="header-info">
+        <div style="display: flex; align-items: center; gap: 5px;">
+            🌍 المحافظة: <input type="text" id="governorateNameInput" class="header-input">
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            🏢 المديرية: <input type="text" id="districtNameInput" class="header-input">
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            🏘️ القرية: <input type="text" id="villageNameInput" class="header-input">
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            👤 المدير: <input type="text" id="managerNameInput" class="header-input">
+        </div>
+    </div>
+
 </div>
 
-<div class="header-info">
-<div>🏘️ القرية: <span id="villageName">---</span></div>
-<div>👤 المدير: <span id="managerName">---</span></div>
-<div>🏢 المديرية: <span id="districtName">---</span></div>
-<div>🌍 المحافظة: <span id="governorateName">---</span></div>
-</div>
-
-</div>
-
-<!-- ===== SIGNATURE (بين الهيدر والواجهة) ===== -->
 <div class="signature" id="signature">
 <div class="marquee">
 ✨ برمجة وتطوير : عصام المهدي | 779551518 ✨ &nbsp;&nbsp; ✦ &nbsp;&nbsp;
@@ -164,7 +192,6 @@ border-color:var(--main);
 </div>
 </div>
 
-<!-- ===== DASHBOARD ===== -->
 <div class="dashboard">
 
 <div class="card">
@@ -189,7 +216,6 @@ border-color:var(--main);
 
 </div>
 
-<!-- ===== ACTIONS ===== -->
 <div class="section">
 
 <button class="btn" onclick="location.href='subscribers.html'">👥 المشتركين</button>
@@ -199,7 +225,6 @@ border-color:var(--main);
 
 </div>
 
-<!-- ===== FIREBASE ===== -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -221,23 +246,23 @@ const db = getDatabase(app);
 
 /* ===== SETTINGS ===== */
 onValue(ref(db,'settings/projectName'),s=>{
-projectName.innerText = s.val() || "مشروع مياه";
+    if(document.getElementById('projectNameInput')) projectNameInput.value = s.val() || "";
 });
 
 onValue(ref(db,'settings/village'),s=>{
-villageName.innerText = s.val() || "---";
+    if(document.getElementById('villageNameInput')) villageNameInput.value = s.val() || "";
 });
 
 onValue(ref(db,'settings/manager'),s=>{
-managerName.innerText = s.val() || "---";
+    if(document.getElementById('managerNameInput')) managerNameInput.value = s.val() || "";
 });
 
 onValue(ref(db,'settings/district'),s=>{
-districtName.innerText = s.val() || "---";
+    if(document.getElementById('districtNameInput')) districtNameInput.value = s.val() || "";
 });
 
 onValue(ref(db,'settings/governorate'),s=>{
-governorateName.innerText = s.val() || "---";
+    if(document.getElementById('governorateNameInput')) governorateNameInput.value = s.val() || "";
 });
 
 /* ===== STATS ===== */
