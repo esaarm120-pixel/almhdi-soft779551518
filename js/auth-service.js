@@ -1,4 +1,18 @@
-import { authService } from "./auth-service.js";
+// تعريف كائن خدمات الجلسة بشكل صريح دون استيراد دائري تكراري
+export const authService = {
+    getCurrentUser() {
+        try {
+            const user = localStorage.getItem('currentUser');
+            return user ? JSON.parse(user) : null;
+        } catch (error) {
+            console.error("خطأ في قراءة بيانات الجلسة من التخزين المحلي:", error);
+            return null;
+        }
+    },
+    logout() {
+        localStorage.removeItem('currentUser');
+    }
+};
 
 // التحقق من كون المستخدم سوبر أدمن
 export function isSuperAdmin() {
@@ -34,20 +48,20 @@ export function redirectToDashboard() {
     }
 }
 
-// التحقق من الصلاحية
+// التحقق من الصلاحية والوصول
 export function checkPermission(permissionId) {
     const currentUser = authService.getCurrentUser();
     if (!currentUser || !currentUser.permissions) return false;
     return currentUser.permissions.includes(permissionId);
 }
 
-// تسجيل الخروج
+// تسجيل الخروج ونقله لصفحة البداية
 export async function logout() {
     await authService.logout();
     window.location.href = 'index.html';
 }
 
-// حماية الصفحات
+// حماية الصفحات من الزوار غير المسجلين
 export function protectPage() {
     const currentUser = authService.getCurrentUser();
     if (!currentUser) {
