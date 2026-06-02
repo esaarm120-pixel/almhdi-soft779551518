@@ -1,209 +1,160 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المياه - تسجيل الدخول</title>
-    <!-- استخدام مكتبات الفايربيس الرسمية الفعالة والمعتمدة -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة المياه - تسجيل الدخول</title>
 
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .login-wrapper { background: #2d2d44; border-radius: 15px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); width: 100%; max-width: 420px; padding: 40px; border: 1px solid #3d3d5c; animation: slideUp 0.5s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .logo-section { text-align: center; margin-bottom: 30px; }
-        .logo { font-size: 60px; margin-bottom: 15px; }
-        h1 { color: #fff; font-size: 24px; margin-bottom: 8px; }
-        .subtitle { color: #aaa; font-size: 13px; line-height: 1.6; }
-        .form-group { margin-bottom: 18px; }
-        label { display: block; color: #ccc; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
-        input[type="email"], input[type="password"] { width: 100%; padding: 12px 15px; border: 2px solid #3d3d5c; border-radius: 6px; font-size: 14px; background-color: #1e1e2e; color: #fff; transition: all 0.3s; }
-        input:focus { outline: none; border-color: #667eea; background-color: #1e1e2e; }
-        .login-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
-        .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .error-message { display: none; background-color: rgba(255, 107, 107, 0.2); color: #ff6b6b; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; border-right: 4px solid #ff6b6b; animation: slideIn 0.3s; }
-        .success-message { display: none; background-color: rgba(0, 255, 136, 0.2); color: #00ff88; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; border-right: 4px solid #00ff88; animation: slideIn 0.3s; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        .signup-link { text-align: center; margin-top: 15px; font-size: 13px; color: #aaa; }
-        .signup-link a { color: #667eea; text-decoration: none; font-weight: 600; cursor: pointer; }
-        .signup-link a:hover { text-decoration: underline; }
-    </style>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', Tahoma;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 15px;
+}
+
+/* LOGIN BOX */
+.login-wrapper {
+    background: #2d2d44;
+    border-radius: 15px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    width: 100%;
+    max-width: 420px;
+    padding: 35px;
+    border: 1px solid #3d3d5c;
+}
+
+.logo-section {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.logo { font-size: 55px; }
+
+h1 {
+    color: #fff;
+    font-size: 22px;
+}
+
+.subtitle {
+    color: #aaa;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* INPUTS */
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    color: #ccc;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #3d3d5c;
+    border-radius: 6px;
+    background: #1e1e2e;
+    color: white;
+    font-size: 14px;
+}
+
+input:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+/* BUTTON */
+.login-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+/* MESSAGES */
+.error-message, .success-message {
+    display:none;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.error-message {
+    background: rgba(255,0,0,0.15);
+    color: #ff6b6b;
+}
+
+.success-message {
+    background: rgba(0,255,0,0.15);
+    color: #00ff88;
+}
+
+/* LINK */
+.signup-link {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+/* ===================== */
+/* 🔥 MOBILE FIX ONLY */
+/* ===================== */
+@media (max-width: 768px){
+
+body{
+    padding: 10px;
+    align-items: flex-start;
+}
+
+.login-wrapper{
+    padding: 25px;
+    border-radius: 12px;
+}
+
+h1{
+    font-size: 20px;
+}
+
+.logo{
+    font-size: 45px;
+}
+
+input{
+    font-size: 15px;
+}
+
+.login-btn{
+    font-size: 14px;
+    padding: 12px;
+}
+
+}
+</style>
 </head>
+
 <body>
 
 <div class="login-wrapper">
     <div class="logo-section">
-        <div class="logo">🚰</div>
-        <h1>نظام إدارة المياه</h1>
-        <p class="subtitle">منظومة محاسبية متكاملة لإدارة مشاريع المياه</p>
-    </div>
-
-    <div class="error-message" id="errorMessage"></div>
-    <div class="success-message" id="successMessage"></div>
-
-    <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group">
-            <label>📧 البريد الإلكتروني:</label>
-            <input type="email" id="email" placeholder="example@gmail.com" required autocomplete="email">
-        </div>
-        <div class="form-group">
-            <label>🔒 كلمة المرور:</label>
-            <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
-        </div>
-        <button type="submit" class="login-btn" id="loginBtn">🔓 تسجيل الدخول</button>
-    </form>
-
-    <div class="signup-link">
-        ليس لديك حساب؟ <a onclick="window.location.href='signup.html'">إنشاء حساب جديد</a>
-    </div>
-</div>
-
-<script>
-    // ⚙️ تهيئة فايربيس المباشرة لنسختك الحقيقية
-    const firebaseConfig = {
-        apiKey: "AIzaSyBzUUx_A0PyMwtEij_uFyLBwzJPZkVxdnk",
-        authDomain: "almhdi-soft779551518.firebaseapp.com",
-        databaseURL: "https://almhdi-soft779551518-default-rtdb.firebaseio.com",
-        projectId: "almhdi-soft779551518",
-        storageBucket: "almhdi-soft779551518.appspot.com",
-        messagingSenderId: "386533839313",
-        appId: "1:386533839313:web:575bc9978c0e38ffd950f0",
-        measurementId: "G-MZSN60VZ63"
-    };
-
-    // تهيئة فايربيس
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    // دالة إدارة تسجيل الدخول
-    async function handleLogin(event) {
-        event.preventDefault();
-        
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const errorDiv = document.getElementById('errorMessage');
-        const successDiv = document.getElementById('successMessage');
-        const loginBtn = document.getElementById('loginBtn');
-
-        errorDiv.style.display = 'none';
-        successDiv.style.display = 'none';
-        loginBtn.disabled = true;
-
-        try {
-            // 1️⃣ تسجيل الدخول بنجاح بالبريد والرقم السري
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-
-            // 2️⃣ جلب صلاحيات المستخدم وحالته من قاعدة البيانات بأسلوب الـ UID
-            let userDoc = await db.collection('users').doc(user.uid).get();
-            
-            // 🛠️ الشفاء الذاتي: إذا لم يُعثر على المستند بالـ UID، جرب المطالبة عن طريق البريد الإلكتروني
-            if (!userDoc.exists) {
-                console.log("المستند بـ UID مفقود، جاري البحث عبر البريد الإلكتروني...");
-                const emailQuery = await db.collection('users').where('email', '==', email).get();
-                
-                if (!emailQuery.empty) {
-                    const originalDoc = emailQuery.docs[0];
-                    const originalData = originalDoc.data();
-                    
-                    console.log("تم كشف مستند مسبق مسجل بالبريد الإلكتروني، جاري ربطه ونسخه لـ UID الحالي...");
-                    
-                    // تحويل وتخزين المطابقة مع الـ UID الأصلي فوراً لضمان تشغيله بباقي الصفحات
-                    await db.collection('users').doc(user.uid).set({
-                        ...originalData,
-                        updatedFromRandomId: originalDoc.id
-                    });
-                    
-                    // جلب مجدد بعد النقل ليكون صالحاً للاستخدام
-                    userDoc = await db.collection('users').doc(user.uid).get();
-                }
-            }
-
-            // 💡 شرط الحماية التلقائي: إذا نجح تسجيل الدخول بالبريد ولكن السجل غير موجود بالـ Firestore إطلاقاً
-            // نقوم ببنائه وضبطه تلقائياً لبريدك الإلكتروني كـ Super Admin لئلا يظهر خطأ قاعدة البيانات!
-            if (!userDoc.exists) {
-                console.log("سجل المستخدم غير موجود في Firestore، جاري إنشاؤه تلقائياً...");
-                
-                const emailLower = email.toLowerCase();
-                const isSuperAdminEmail = 
-                    emailLower === 'esaarm120@gmail.com' ||
-                    emailLower === 'benfhmi322@gmail.com' || 
-                    emailLower === 'esam@gmail.com' ||
-                    emailLower.includes('admin');
-                
-                const fallbackRole = isSuperAdminEmail ? 'super_admin' : 'project_admin';
-                
-                const initialUserData = {
-                    firstName: isSuperAdminEmail ? "عصام" : "مدير",
-                    lastName: isSuperAdminEmail ? "المهدي" : "مشروع",
-                    email: email,
-                    phone: "779551518",
-                    role: fallbackRole,
-                    projectId: isSuperAdminEmail ? null : "project_auto_gen",
-                    createdAt: new Date().toISOString(),
-                    status: "active"
-                };
-
-                // حفظه فوراً في الفايرستور ليكون متوفراً لكل الصفحات الأخرى بمسار UID الصحيح
-                await db.collection('users').doc(user.uid).set(initialUserData);
-                
-                // إعادة جلب المستند بعد البناء التلقائي
-                userDoc = await db.collection('users').doc(user.uid).get();
-            }
-
-            const userData = userDoc.data();
-            
-            // التحقق من حالة الحساب لتجنب التعليق
-            if (userData.status === 'suspended') {
-                throw new Error('عذراً، هذا الحساب معطل وموقف مؤقتاً من قبل المطور أو الإدارة.');
-            }
-
-            // تخزين بيانات الجلسة الحالية محلياً
-            localStorage.setItem('currentUser', JSON.stringify({
-                uid: user.uid,
-                email: user.email,
-                role: userData.role,
-                projectId: userData.projectId || null,
-                firstName: userData.firstName,
-                lastName: userData.lastName
-            }));
-
-            successDiv.textContent = '✅ تم تسجيل الدخول بنجاح! جاري تحويلك إلى لوحة التحكم...';
-            successDiv.style.display = 'block';
-
-            // 3️⃣ التوجيه التلقائي للمستخدم حسب دوره الصلاحياتي
-            setTimeout(() => {
-                if (userData.role === 'super_admin') {
-                    window.location.href = 'super-admin-dashboard.html';
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
-            }, 1500);
-
-        } catch (error) {
-            console.error("Login Error:", error);
-            let msg = error.message;
-            
-            // تخصيص رسائل الخطأ الشائعة باللغة العربية
-            if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-                msg = 'بيانات الدخول غير صحيحة، يرجى مراجعة البريد الإلكتروني أو كلمة المرور.';
-            } else if (error.code === 'auth/too-many-requests') {
-                msg = 'لقد قمت بعدة محاولات معطلة، تم قفل الحساب مؤقتاً لحمايتك. حاول مرة أخرى لاحقاً.';
-            } else if (error.code === 'auth/network-request-failed') {
-                msg = 'فشل الاتصال بقاعدة البيانات بسبب غياب الإنترنت! يرجى التحقق من الشبكة.';
-            }
-            
-            errorDiv.textContent = `❌ ${msg}`;
-            errorDiv.style.display = 'block';
-            loginBtn.disabled = false;
-        }
-    }
-</script>
-
-</body>
-</html>
+        <div class="logo 
