@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشروع مياه الحسينية - تسجيل الدخول</title>
+    <title>نظام إدارة المياه - تسجيل الدخول</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
@@ -58,17 +58,36 @@
 </div>
 
 <script type="module">
-    import { authService } from "./js/auth-service.js";
+    import { db, auth } from "./config/firebase-config.js";
     import { errorMessages } from "./config/firebase-config.js";
-    import { redirectToDashboard } from "./js/auth-system.js";
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // التحقق التلقائي عند فتح الصفحة
-    authService.onAuthStateChanged((user) => {
-        if (user && localStorage.getItem('currentUser')) {
-            console.log('✅ المستخدم مسجل دخول بالفعل');
-            setTimeout(() => redirectToDashboard(), 500);
+    // دالة التوجيه الذكي بعد التحقق من البيانات والصلاحيات
+    function executeSmartDirection(userData) {
+        const role = userData.role;
+        if (role === "super_admin") {
+            window.location.href = "super-admin.html";
+        } else if (role === "project_admin") {
+            window.location.href = "dashboard.html";
+        } else {
+            window.location.href = "dashboard.html";
         }
-    });
+    }
+
+    // التحقق التلقائي المحدث عند فتح الصفحة
+    const localUser = localStorage.getItem('currentUser');
+    if (localUser) {
+        try {
+            const parsedUser = JSON.parse(localUser);
+            if (parsedUser && parsedUser.uid) {
+                console.log('✅ المستخدم مسجل دخول بالفعل، جاري التوجيه تلقائياً...');
+                executeSmartDirection(parsedUser);
+            }
+        } catch (e) {
+            localStorage.removeItem('currentUser');
+        }
+    }
 
     window.handleLogin = async function(event) {
         event.preventDefault();
@@ -78,7 +97,6 @@
         const successDiv = document.getElementById('successMessage');
         const loginBtn = document.getElementById('loginBtn');
 
-        // إخفاء الرسائل
         errorDiv.style.display = 'none';
         successDiv.style.display = 'none';
         loginBtn.disabled = true;
@@ -86,20 +104,47 @@
 
         try {
             console.log('🔐 جاري محاولة تسجيل الدخول...');
-            const { user, userData } = await authService.login(email, password);
+            // 1️⃣ تسجيل الدخول باستخدام البريد وكلمة المرور
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const userId = userCredential.user.uid;
             
-            console.log('✅ تم التحقق من المستخدم:', user.uid);
-            authService.saveUserToLocalStorage(user, userData);
+            console.log('🔍 جاري سحب بيانات المستخدم من Firestore لربط المشروع...');
+            // 2️⃣ جلب مستند المستخدم من Firestore لقراءة الـ role والـ projectId المخزن تلقائياً
+            const userDoc = await getDoc(doc(db, "users", userId));
             
-            successDiv.textContent = `✅ مرحباً بك ${userData.displayName || 'يا مستخدم'}!`;
-            successDiv.style.display = 'block';
-            
-            console.log('🔄 جاري التوجيه...');
-            setTimeout(() => redirectToDashboard(), 1000);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                
+                if (userData.status !== "active") {
+                    throw { code: "custom/inactive-account", message: "هذا الحساب معطل حالياً، يرجى مراجعة الإدارة" };
+                }
+
+                // 3️⃣ تخزين بيانات الهوية والمشروع الموحدة في الـ localStorage لتستفيد منها بقية الصفحات لعزل بياناتها
+                const sessionData = {
+                    uid: userId,
+                    email: userData.email,
+                    role: userData.role,
+                    projectId: userData.projectId || null, // كود المشروع المرتبط تلقائياً
+                    displayName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim()
+                };
+                
+                localStorage.setItem('currentUser', JSON.stringify(sessionData));
+                console.log('💾 تم حفظ جلسة المستخدم وكود المشروع بنجاح:', sessionData.projectId);
+                
+                successDiv.textContent = `✅ مرحباً بك ${sessionData.displayName || 'يا مستخدم'}!`;
+                successDiv.style.display = 'block';
+                
+                console.log('🔄 جاري التوجيه الذكي لوجهة المستخدم...');
+                setTimeout(() => {
+                    executeSmartDirection(sessionData);
+                }, 1000);
+            } else {
+                throw { code: "custom/user-not-found", message: "بيانات المستخدم غير مسجلة في قاعدة البيانات" };
+            }
             
         } catch (error) {
             console.error('❌ خطأ في تسجيل الدخول:', error.code, error.message);
-            const errorMessage = errorMessages[error.code] || `خطأ: ${error.message}`;
+            const errorMessage = errorMessages[error.code] || error.message || "فشل تسجيل الدخول";
             errorDiv.textContent = `❌ ${errorMessage}`;
             errorDiv.style.display = 'block';
             loginBtn.disabled = false;
