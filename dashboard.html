@@ -1,40 +1,42 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة التحكم</title>
-<style>
-:root { --primary: #004a99; --bg: #f4f7f9; --card: #ffffff; --text: #333; }
-body { margin: 0; padding: 10px; background: var(--bg); font-family: sans-serif; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم الكاملة</title>
+    <style>
+        :root { --primary: #004a99; --bg: #f4f7f9; --card: #ffffff; --text: #333; }
+        body { margin: 0; padding: 10px; background: var(--bg); font-family: sans-serif; }
 
-.header { background: var(--primary); padding: 15px; color: white; border-radius: 15px; margin-bottom: 10px; }
-.header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.input-group { display: flex; flex-direction: column; gap: 2px; }
-.header-input { background: rgba(255,255,255,0.15); border: none; color: white; padding: 5px; border-radius: 5px; cursor: not-allowed; font-size: 13px; }
+        /* الترويسة */
+        .header { background: var(--primary); padding: 15px; color: white; border-radius: 15px; margin-bottom: 10px; }
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .header-input { background: rgba(255,255,255,0.15); border: none; color: white; padding: 6px; border-radius: 5px; cursor: not-allowed; width: 100%; box-sizing: border-box; }
+        
+        /* التوقيع - حركة من اليسار لليمين */
+        .signature { background: var(--card); padding: 10px; border-radius: 10px; border: 1px solid #ddd; overflow: hidden; margin-bottom: 10px; }
+        .marquee { display: inline-block; animation: move 15s linear infinite; color: var(--primary); font-weight: bold; white-space: nowrap; }
+        @keyframes move { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-.signature { background: var(--card); padding: 10px; border-radius: 10px; border: 1px solid #ddd; overflow: hidden; margin-bottom: 10px; }
-.marquee { display: inline-block; animation: move 15s linear infinite; color: var(--primary); font-weight: bold; }
-@keyframes move { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-
-.dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.card { background: var(--card); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #eee; }
-.card h4 { margin: 0; font-size: 12px; color: #666; }
-.card span { display: block; font-size: 18px; font-weight: bold; color: var(--primary); margin-top: 5px; }
-</style>
+        /* البطاقات */
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .card { background: var(--card); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #eee; }
+        .card span { display: block; font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 5px; }
+        
+        /* العمليات السريعة */
+        .quick-actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+        .action-btn { background: var(--card); padding: 8px; border-radius: 10px; text-align: center; font-size: 10px; border: 1px solid #eee; }
+    </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="header-top">
-        <strong>مشروع مياه بني الحارث</strong>
-        <div onclick="location.href='settings.html'">⚙️</div>
-    </div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div class="input-group"><label style="font-size:10px;">المحافظة</label><input type="text" id="governorateNameInput" class="header-input" readonly></div>
-        <div class="input-group"><label style="font-size:10px;">المديرية</label><input type="text" id="districtNameInput" class="header-input" readonly></div>
-        <div class="input-group"><label style="font-size:10px;">القرية</label><input type="text" id="villageNameInput" class="header-input" readonly></div>
-        <div class="input-group"><label style="font-size:10px;">المدير</label><input type="text" id="managerNameInput" class="header-input" readonly></div>
+    <div style="display:flex; justify-content:space-between;"><strong>مشروع مياه بني الحارث</strong> <span onclick="location.href='settings.html'">⚙️</span></div>
+    <div class="header-grid">
+        <div><small>المحافظة</small><input type="text" id="governorateNameInput" class="header-input" readonly></div>
+        <div><small>المديرية</small><input type="text" id="districtNameInput" class="header-input" readonly></div>
+        <div><small>القرية</small><input type="text" id="villageNameInput" class="header-input" readonly></div>
+        <div><small>المدير</small><input type="text" id="managerNameInput" class="header-input" readonly></div>
     </div>
 </div>
 
@@ -43,10 +45,17 @@ body { margin: 0; padding: 10px; background: var(--bg); font-family: sans-serif;
 </div>
 
 <div class="dashboard">
-    <div class="card"><h4>👥 المشتركين</h4><span id="subsCount">0</span></div>
-    <div class="card"><h4>🧾 الفواتير</h4><span id="pendingBills">0</span></div>
-    <div class="card"><h4>💰 الصندوق</h4><span id="cashBalance">0</span></div>
-    <div class="card"><h4>🏦 التحويل</h4><span id="transferBalance">0</span></div>
+    <div class="card"><h4>المشتركين</h4><span id="subsCount">0</span></div>
+    <div class="card"><h4>الفواتير</h4><span id="pendingBills">0</span></div>
+    <div class="card"><h4>سندات قبض</h4><span id="receipts">0</span></div>
+</div>
+
+<div class="quick-actions">
+    <div class="action-btn">💧<br>قراءة</div>
+    <div class="action-btn">📉<br>مصروف</div>
+    <div class="action-btn">📥<br>قبض</div>
+    <div class="action-btn">👥<br>مشترك</div>
+    <div class="action-btn">🏦<br>صندوق</div>
 </div>
 
 <script type="module">
@@ -68,21 +77,12 @@ body { margin: 0; padding: 10px; background: var(--bg); font-family: sans-serif;
     const db = getDatabase(app);
 
     // ربط البيانات
-    const paths = { 
-        'villageNameInput': 'settings/village', 
-        'managerNameInput': 'settings/manager', 
-        'districtNameInput': 'settings/district', 
-        'governorateNameInput': 'settings/governorate' 
-    };
-
-    Object.keys(paths).forEach(id => {
-        onValue(ref(db, paths[id]), s => { document.getElementById(id).value = s.val() || ""; });
-    });
-
+    const inputs = { 'villageNameInput': 'settings/village', 'managerNameInput': 'settings/manager', 'districtNameInput': 'settings/district', 'governorateNameInput': 'settings/governorate' };
+    Object.keys(inputs).forEach(id => { onValue(ref(db, inputs[id]), s => { document.getElementById(id).value = s.val() || ""; }); });
+    
     onValue(ref(db,'stats/subscribers'), s => { document.getElementById('subsCount').innerText = s.val() || 0; });
     onValue(ref(db,'stats/pendingBills'), s => { document.getElementById('pendingBills').innerText = s.val() || 0; });
-    onValue(ref(db,'cashBox'), s => { document.getElementById('cashBalance').innerText = s.val() || 0; });
-    onValue(ref(db,'transferBox'), s => { document.getElementById('transferBalance').innerText = s.val() || 0; });
 </script>
 </body>
 </html>
+ 
