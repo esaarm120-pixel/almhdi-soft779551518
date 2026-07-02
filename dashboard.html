@@ -1,204 +1,141 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة التحكم - سوبر أدمن</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+  <title>مشروع مياه بني الحارث — لوحة</title>
 
-<style>
-body{
-    margin:0;
-    font-family: Arial;
-    background:#f4f6f9;
-}
+  <!-- خط عربي مناسب -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-/* HEADER */
-header{
-    background:#0f172a;
-    color:white;
-    padding:15px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
+  <!-- ربط ملف النمط المخصّص -->
+  <link rel="stylesheet" href="assets/css/dashboard.css">
 
-/* SIGNATURE */
-.signature{
-    background:#111827;
-    color:#facc15;
-    padding:8px;
-    overflow:hidden;
-    white-space:nowrap;
-}
-
-.signature span{
-    display:inline-block;
-    animation: move 10s linear infinite;
-}
-
-@keyframes move{
-    0%{transform:translateX(-100%)}
-    100%{transform:translateX(100%)}
-}
-
-/* LAYOUT */
-.container{
-    display:grid;
-    grid-template-columns:220px 1fr;
-    min-height:calc(100vh - 100px);
-}
-
-/* SIDEBAR */
-.sidebar{
-    background:#1e293b;
-    color:white;
-    padding:10px;
-}
-
-.sidebar button{
-    width:100%;
-    padding:10px;
-    margin:5px 0;
-    border:none;
-    cursor:pointer;
-    background:#334155;
-    color:white;
-}
-
-.sidebar button:hover{
-    background:#475569;
-}
-
-/* MAIN */
-.main{
-    padding:15px;
-}
-
-/* CARD */
-.card{
-    background:white;
-    padding:15px;
-    border-radius:10px;
-    margin-bottom:15px;
-    box-shadow:0 0 10px rgba(0,0,0,0.1);
-}
-
-/* TABLE */
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-table th, table td{
-    border:1px solid #ddd;
-    padding:8px;
-    text-align:center;
-}
-
-table th{
-    background:#0f172a;
-    color:white;
-}
-
-/* MOBILE */
-@media(max-width:768px){
-    .container{
-        grid-template-columns:1fr;
-    }
-
-    .sidebar{
-        display:flex;
-        overflow-x:auto;
-    }
-
-    .sidebar button{
-        min-width:140px;
-    }
-}
-</style>
+  <!-- أيقونات (اختياري) -->
+  <script src="https://unpkg.com/feather-icons"></script>
 </head>
-
 <body>
+  <!-- HEADER -->
+  <header class="app-header">
+    <button class="hamburger" aria-label="قائمة">☰</button>
+    <div class="header-center">
+      <h1 class="project-title">مشروع مياه بني الحارث</h1>
+      <div class="project-meta">المحافظة: إب  |  المديرية: السبـرة  |  القرية: بني الحارث</div>
+      <div class="project-manager">مدير المشروع: محمد علي الحكيمي</div>
+    </div>
+    <button class="notifications" aria-label="إشعارات">🔔<span class="dot"></span></button>
+  </header>
 
-<header>
-    <h2>👑 لوحة تحكم سوبر أدمن</h2>
-    <div>System Control</div>
-</header>
+  <!-- SIGNATURE MARQUEE -->
+  <div class="signature">
+    <div class="signature-inner">Signature &nbsp; | &nbsp; برمجة وتطوير عصام المهدي • 779551518 • اذكر الله وصل على النبي</div>
+    <div class="status-dot green"></div>
+  </div>
 
-<!-- ✍️ توقيع متحرك -->
-<div class="signature">
-    <span>برمجة وتطوير عصام المهدي 779551518 — اذكر الله وصل على النبي 🤍</span>
-</div>
+  <!-- MAIN CONTENT -->
+  <main class="container">
+    <!-- TOP STAT CARDS -->
+    <section class="stat-row">
+      <div class="stat-card">
+        <div class="icon-circle purple">👥</div>
+        <div class="stat-title">المشتركين</div>
+        <div class="stat-value">0</div>
+        <div class="stat-sub">إجمالي المشتركين</div>
+      </div>
 
-<div class="container">
+      <div class="stat-card">
+        <div class="icon-circle green">🟢</div>
+        <div class="stat-title">القراءات</div>
+        <div class="stat-value">0</div>
+        <div class="stat-sub">قراءة هذا الشهر</div>
+      </div>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-    <button onclick="show('home')">الرئيسية</button>
-    <button onclick="show('projects')">المشاريع</button>
-    <button onclick="show('users')">المستخدمين</button>
-    <button onclick="show('settings')">الإعدادات</button>
-</div>
+      <div class="stat-card">
+        <div class="icon-circle blue">📄</div>
+        <div class="stat-title">الفواتير</div>
+        <div class="stat-value">0</div>
+        <div class="stat-sub">فواتير غير مدفوعة</div>
+      </div>
 
-<!-- MAIN -->
-<div class="main">
+      <div class="stat-card">
+        <div class="icon-circle orange">⬇️</div>
+        <div class="stat-title">سندات القبض</div>
+        <div class="stat-value">0</div>
+        <div class="stat-sub">سندات هذا الشهر</div>
+      </div>
 
-<!-- HOME -->
-<div id="home" class="card section">
-    <h3>📊 لوحة التحكم</h3>
-    <p>مرحباً بك في النظام</p>
-</div>
+      <div class="stat-card">
+        <div class="icon-circle red">🏠</div>
+        <div class="stat-title">سندات الصرف</div>
+        <div class="stat-value">0</div>
+        <div class="stat-sub">سندات هذا الشهر</div>
+      </div>
+    </section>
 
-<!-- PROJECTS -->
-<div id="projects" class="card section" style="display:none">
-    <h3>🏗 المشاريع</h3>
+    <!-- REVENUE / EXPENSES -->
+    <section class="totals-row">
+      <div class="total-card revenue">
+        <div class="small-icon">💼</div>
+        <div class="total-title">إجمالي الإيرادات</div>
+        <div class="total-value">0 <span class="currency">ريال يمني</span></div>
+        <div class="total-sub">هذا الشهر</div>
+      </div>
+      <div class="total-card expenses">
+        <div class="small-icon">👜</div>
+        <div class="total-title">إجمالي المصروفات</div>
+        <div class="total-value">0 <span class="currency">ريال يمني</span></div>
+        <div class="total-sub">هذا الشهر</div>
+      </div>
+    </section>
 
-    <input placeholder="اسم المشروع">
-    <button>إضافة</button>
+    <!-- EMPTY SECTIONS -->
+    <section class="card empty">
+      <div class="card-header">
+        <h3>آخر المصروفات</h3>
+        <a class="show-all">عرض الكل</a>
+      </div>
+      <div class="empty-body">
+        <div class="empty-icon">📁</div>
+        <div class="empty-text">لا توجد مصروفات<br/>ستظهر آخر المصروفات هنا</div>
+      </div>
+    </section>
 
-    <table>
-        <thead>
-            <tr>
-                <th>اسم المشروع</th>
-                <th>مدير المشروع</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>مثال</td>
-                <td>مدير</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+    <section class="card empty">
+      <div class="card-header">
+        <h3>آخر الحركة المالية</h3>
+        <a class="show-all">عرض الكل</a>
+      </div>
+      <div class="empty-body">
+        <div class="empty-icon">📄</div>
+        <div class="empty-text">لا توجد حركة مالية<br/>ستظهر آخر الحركات هنا</div>
+      </div>
+    </section>
 
-<!-- USERS -->
-<div id="users" class="card section" style="display:none">
-    <h3>👤 المستخدمين</h3>
+    <!-- QUICK ACTIONS -->
+    <section class="quick-actions">
+      <h4>عمليات سريعة</h4>
+      <div class="actions-row">
+        <button class="action">📊<span>إضافة قراءة</span></button>
+        <button class="action">🏠<span>إضافة مصروف</span></button>
+        <button class="action">⬇️<span>إضافة قبض</span></button>
+        <button class="action">➕<span>إضافة مشترك</span></button>
+        <button class="action">🗃️<span>إضافة صندوق</span></button>
+      </div>
+    </section>
+  </main>
 
-    <input placeholder="الإيميل">
-    <select>
-        <option>سوبر أدمن</option>
-        <option>مدير مشروع</option>
-    </select>
-    <button>إضافة مستخدم</button>
-</div>
-
-<!-- SETTINGS -->
-<div id="settings" class="card section" style="display:none">
-    <h3>⚙️ الإعدادات (سوبر أدمن)</h3>
-    <p>هنا يتم التحكم الكامل بالنظام</p>
-</div>
-
-</div>
-</div>
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a class="nav-item">المزيد</a>
+    <a class="nav-item">التقارير</a>
+    <button class="fab">+</button>
+    <a class="nav-item">الفواتير</a>
+    <a class="nav-item active">الرئيسية</a>
+  </nav>
 
 <script>
-function show(id){
-    document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-    document.getElementById(id).style.display='block';
-}
+  // تشغيل أيقونات (اختياري عند استخدام feather)
+  if (window.feather) feather.replace();
 </script>
-
 </body>
 </html>
