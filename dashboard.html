@@ -39,35 +39,35 @@
       <div class="stat-card">
         <div class="icon-circle purple">👥</div>
         <div class="stat-title">المشتركين</div>
-        <div class="stat-value">0</div>
+        <div id="subscribers-count" class="stat-value">0</div>
         <div class="stat-sub">إجمالي المشتركين</div>
       </div>
 
       <div class="stat-card">
         <div class="icon-circle green">🟢</div>
         <div class="stat-title">القراءات</div>
-        <div class="stat-value">0</div>
+        <div id="readings-count" class="stat-value">0</div>
         <div class="stat-sub">قراءة هذا الشهر</div>
       </div>
 
       <div class="stat-card">
         <div class="icon-circle blue">📄</div>
         <div class="stat-title">الفواتير</div>
-        <div class="stat-value">0</div>
+        <div id="invoices-count" class="stat-value">0</div>
         <div class="stat-sub">فواتير غير مدفوعة</div>
       </div>
 
       <div class="stat-card">
         <div class="icon-circle orange">⬇️</div>
         <div class="stat-title">سندات القبض</div>
-        <div class="stat-value">0</div>
+        <div id="receipts-count" class="stat-value">0</div>
         <div class="stat-sub">سندات هذا الشهر</div>
       </div>
 
       <div class="stat-card">
         <div class="icon-circle red">🏠</div>
         <div class="stat-title">سندات الصرف</div>
-        <div class="stat-value">0</div>
+        <div id="payments-count" class="stat-value">0</div>
         <div class="stat-sub">سندات هذا الشهر</div>
       </div>
     </section>
@@ -77,14 +77,14 @@
       <div class="total-card revenue">
         <div class="small-icon">💼</div>
         <div class="total-title">إجمالي الإيرادات</div>
-        <div class="total-value">0 <span class="currency">ريال يمني</span></div>
+        <div id="revenue-total" class="total-value">0 <span class="currency">ريال يمني</span></div>
         <div class="total-sub">هذا الشهر</div>
       </div>
       <div class="total-card expenses">
         <div class="small-icon">👜</div>
         <div class="total-title">إجمالي المصروفات</div>
-        <div class="total-value">0 <span class="currency">ريال يمني</span></div>
-        <div class="total-sub">هذا الشهر</div>
+        <div id="expenses-total" class="total-value">0 <span class="currency">ريال يمني</span></div>
+        <div class="total-sub">هذا الشه��</div>
       </div>
     </section>
 
@@ -115,11 +115,11 @@
     <section class="quick-actions">
       <h4>عمليات سريعة</h4>
       <div class="actions-row">
-        <button class="action">📊<span>إضافة قراءة</span></button>
-        <button class="action">🏠<span>إضافة مصروف</span></button>
-        <button class="action">⬇️<span>إضافة قبض</span></button>
-        <button class="action">➕<span>إضافة مشترك</span></button>
-        <button class="action">🗃️<span>إضافة صندوق</span></button>
+        <button class="action" id="action-add-reading">📊<span>إضافة قراءة</span></button>
+        <button class="action" id="action-add-expense">🏠<span>إضافة مصروف</span></button>
+        <button class="action" id="action-add-receipt">⬇️<span>إضافة قبض</span></button>
+        <button class="action" id="action-add-subscriber">➕<span>إضافة مشترك</span></button>
+        <button class="action" id="action-add-cashbox">🗃️<span>إضافة صندوق</span></button>
       </div>
     </section>
   </main>
@@ -133,6 +133,7 @@
     <a class="nav-item active">الرئيسية</a>
   </nav>
 
+<script type="module" src="js/dashboard-ui.js"></script>
 <script>
   // تشغيل أيقونات (اختياري عند استخدام feather)
   if (window.feather) feather.replace();
